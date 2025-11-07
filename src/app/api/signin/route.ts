@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { PrismaClient } from "../../../../generated/prisma/client";
 
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({})
 const secret = process.env.JWT_SECRET || "secret"
 
 export async function POST(req:NextRequest,res:NextResponse){
@@ -15,6 +15,7 @@ const existingUser = await prisma.user.findFirst({
         address:hardcodedWalletAddress
     }
 })
+console.log(secret,"secret")
 
 if(existingUser){
 const token = jwt.sign({

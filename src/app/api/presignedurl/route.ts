@@ -6,7 +6,7 @@ export async function GET(req:NextRequest){
 const accessKey = process.env.AWS_ACCESS_KEY ?? "";
 const secretKey = process.env.AWS_SECRET_KEY ?? "";
 const bucketName = process.env.AWS_BUCKET_NAME ?? "";
-const AWS_REGION = process.env.AWS_REGION ?? "";
+const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 console.log(accessKey,secretKey,"accessKey,secretKey");
 
 if(!accessKey || !secretKey){
@@ -22,14 +22,14 @@ if(!accessKey || !secretKey){
     })
 
 
-const presignedUrl = await createPresignedPost(s3Client,{
+const {url, fields} = await createPresignedPost(s3Client,{
     Bucket: bucketName,
-    Key: `/crowdmint/cmhnt1dwn0000se7w0v12vidv/${Date.now()}.jpg`,
+    Key: `/crowdmint/${userId}/${Date.now()}.jpg`,
     Conditions: [
         ["content-length-range", 1, 10 * 1024 * 1024]
       ],
     Expires: 60 * 60 * 24 
 })
-console.log(presignedUrl,"presignedUrl");
-    return NextResponse.json({ presignedUrl });
+console.log(url,fields,"url,fields");
+    return NextResponse.json({ url, fields });
 }

@@ -38,7 +38,7 @@ model Task{
   title     String
   type      TaskType
   signature String
-  amount    Int
+  amount    String
   options   Option[]
   userId    String
   user      User       @relation(fields: [userId], references: [id])
@@ -48,7 +48,6 @@ model Task{
 model Option{
   id        String       @id @default(cuid())
   imageUrl  String?
-  optionIndex Int
   taskId    String
   task      Task       @relation(fields: [taskId], references: [id])
   submissions Submission[]

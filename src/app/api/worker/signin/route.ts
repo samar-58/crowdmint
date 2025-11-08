@@ -7,31 +7,34 @@ export async function POST(req:NextRequest,res:NextResponse){
 
 const hardcodedWalletAddress = "6k9VSg4bVvVAj5xVis9eG74vED9iWYXjhSUCnA8gzChR";
 
-const existingUser = await prisma.user.findFirst({
+const existingWorker = await prisma.worker.findFirst({
     where: {
         address:hardcodedWalletAddress
     }
 })
 
-if(existingUser){
+if(existingWorker){
 const token = jwt.sign({
-      userId:existingUser.id
+      userId:existingWorker.id,
+      role: 'worker'
 },secret)
 
 return NextResponse.json({ token })
 }
 
 else{
-const newUser = await prisma.user.create({
+const newWorker = await prisma.worker.create({
     data: {
         address:hardcodedWalletAddress
     }
 })
 
 const token = jwt.sign({
-    userId:newUser.id
+    userId:newWorker.id,
+    role: 'worker'
 },secret)
 
 return NextResponse.json({ token })
 }
 }
+

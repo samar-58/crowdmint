@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { prisma } from "@/utils/constants";
 
 export async function middleware(req: NextRequest) {
   const authHeader = req.headers.get("Authorization");
@@ -16,13 +17,41 @@ export async function middleware(req: NextRequest) {
       new TextEncoder().encode(secret)
     );
 
-    // Type guard to ensure userId exists in payload
     if (!payload.userId || typeof payload.userId !== "string" && typeof payload.userId !== "number") {
       return NextResponse.json({ error: "Invalid token payload" }, { status: 401 });
     }
 
+    const pathname = req.nextUrl.pathname;
     const headers = new Headers(req.headers);
-    headers.set("x-user-id", String(payload.userId));
+
+    // User routes - require 'user' role
+    if (pathname.startsWith('/api/user/')) {
+      if (payload.role !== 'user') {
+        return NextResponse.json({ error: "Invalid role" }, { status: 401 });
+      }
+      // Validate userId exists in User table
+      const user = await prisma.user.findUnique({
+        where: { id: String(payload.userId) }
+      });
+      if (!user) {
+        return NextResponse.json({ error: "Invalid user" }, { status: 401 });
+      }
+      headers.set("x-user-id", String(payload.userId));
+    }
+    // Worker routes - require 'worker' role
+    else if (pathname.startsWith('/api/worker/')) {
+      if (payload.role !== 'worker') {
+        return NextResponse.json({ error: "Invalid role" }, { status: 401 });
+      }
+      // Validate userId exists in Worker table
+      const worker = await prisma.worker.findUnique({
+        where: { id: String(payload.userId) }
+      });
+      if (!worker) {
+        return NextResponse.json({ error: "Invalid worker" }, { status: 401 });
+      }
+      headers.set("x-worker-id", String(payload.userId));
+    }
 
     return NextResponse.next({
       request: {
@@ -35,6 +64,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/presignedurl","/api/tasks"],
+  matcher: ["/api/user/:path*", "/api/worker/:path*"],
 };
-

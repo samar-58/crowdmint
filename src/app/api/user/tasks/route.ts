@@ -34,7 +34,7 @@ export async function POST(req:NextRequest){
 
    })
    return task;
-    }) 
+    })
     return NextResponse.json({ message: "Task created successfully" ,taskId:response?.id}, { status: 200 });
 }
 

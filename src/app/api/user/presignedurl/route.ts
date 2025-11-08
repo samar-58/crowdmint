@@ -28,7 +28,7 @@ const {url, fields} = await createPresignedPost(s3Client,{
     Conditions: [
         ["content-length-range", 1, 10 * 1024 * 1024]
       ],
-    Expires: 60 * 60 * 24 
+    Expires: 60 * 60 * 24
 })
 console.log(url,fields,"url,fields");
     return NextResponse.json({ url, fields });

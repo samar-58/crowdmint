@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { prisma } from "@/utils/constants";
 
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+  
+  // Skip middleware for signin routes (they don't need auth)
+  if (pathname === '/api/user/signin' || pathname === '/api/worker/signin') {
+    return NextResponse.next();
+  }
+
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
@@ -21,7 +27,6 @@ export async function middleware(req: NextRequest) {
       return NextResponse.json({ error: "Invalid token payload" }, { status: 401 });
     }
 
-    const pathname = req.nextUrl.pathname;
     const headers = new Headers(req.headers);
 
     // User routes - require 'user' role
@@ -29,26 +34,12 @@ export async function middleware(req: NextRequest) {
       if (payload.role !== 'user') {
         return NextResponse.json({ error: "Invalid role" }, { status: 401 });
       }
-      // Validate userId exists in User table
-      const user = await prisma.user.findUnique({
-        where: { id: String(payload.userId) }
-      });
-      if (!user) {
-        return NextResponse.json({ error: "Invalid user" }, { status: 401 });
-      }
       headers.set("x-user-id", String(payload.userId));
     }
     // Worker routes - require 'worker' role
     else if (pathname.startsWith('/api/worker/')) {
       if (payload.role !== 'worker') {
         return NextResponse.json({ error: "Invalid role" }, { status: 401 });
-      }
-      // Validate userId exists in Worker table
-      const worker = await prisma.worker.findUnique({
-        where: { id: String(payload.userId) }
-      });
-      if (!worker) {
-        return NextResponse.json({ error: "Invalid worker" }, { status: 401 });
       }
       headers.set("x-worker-id", String(payload.userId));
     }

@@ -1,7 +1,7 @@
 import { createTaskSchema } from "@/types/createTask";
 import { prisma } from "@/utils/constants";
 import { NextRequest, NextResponse } from "next/server";
-import { TaskType } from "../../../../generated/prisma/client";
+import { TaskType } from "../../../../../generated/prisma/client";
 import z from "zod";
 
 

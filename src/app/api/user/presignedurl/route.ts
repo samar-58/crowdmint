@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post"
-export async function GET(req:NextRequest){
 
+export async function GET(req:NextRequest){
 const accessKey = process.env.AWS_ACCESS_KEY ?? "";
 const secretKey = process.env.AWS_SECRET_KEY ?? "";
 const bucketName = process.env.AWS_BUCKET_NAME ?? "";

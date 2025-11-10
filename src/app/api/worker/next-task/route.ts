@@ -1,5 +1,5 @@
-import { prisma } from "@/utils/constants";
-import { getNextTask } from "@/utils/getNexttask";
+
+import { getNextTask } from "@/utils/getNextTask";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req:NextRequest){

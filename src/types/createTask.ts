@@ -7,4 +7,5 @@ options: z.array(z.object({
 title: z.string().optional(),
 type: z.enum(["TEXT", "IMAGE"]),
 signature: z.string(),
+amount: z.number(),
 })

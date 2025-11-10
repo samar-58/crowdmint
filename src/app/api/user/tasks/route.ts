@@ -1,5 +1,5 @@
 import { createTaskSchema } from "@/types/createTask";
-import { prisma } from "@/utils/constants";
+import { LAMPORTS_PER_SOL, prisma } from "@/utils/constants";
 import { NextRequest, NextResponse } from "next/server";
 import { TaskType } from "../../../../../generated/prisma/client";
 import z from "zod";
@@ -22,7 +22,7 @@ export async function POST(req:NextRequest){
         title:parsedData?.data?.title ?? "",
        type:parsedData?.data?.type as TaskType,
        signature:parsedData?.data?.signature,
-       amount:"1",
+       amount:parsedData?.data?.amount * LAMPORTS_PER_SOL,
        userId:req.headers.get("x-user-id") ?? "",
     }
    })

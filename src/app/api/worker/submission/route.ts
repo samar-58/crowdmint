@@ -1,6 +1,6 @@
 import { submissionSchema } from "@/types/submissionSchema";
-import { prisma } from "@/utils/constants";
-import { getNextTask } from "@/utils/getNexttask";
+import { LAMPORTS_PER_SOL, prisma } from "@/utils/constants";
+import { getNextTask } from "@/utils/getNextTask";
 import { NextRequest, NextResponse } from "next/server";
 
 const TotalWorkers = 10;
@@ -15,10 +15,14 @@ export async function POST(req:NextRequest){
 
 let task = await getNextTask(workerId as string);
 
-if(!task || task?.id === parsedData.data.taskId){
+if(!task){
+    return NextResponse.json({ error: "No task found" }, { status: 404 });
+}
+
+if(task?.id === parsedData.data.taskId){
     return NextResponse.json({ error: "Invalid Task Id" }, { status: 404 });
 }
-let amount = parseInt(task.amount)/TotalWorkers;
+let amount = task.amount / LAMPORTS_PER_SOL / TotalWorkers;
 
 const submission = prisma.$transaction(async tx => {
     let submission = await tx.submission.create({
@@ -36,7 +40,7 @@ const submission = prisma.$transaction(async tx => {
         },
         data:{
             pendingBalance: {
-                increment: amount,
+                increment: amount * LAMPORTS_PER_SOL,
             },
         },
     })

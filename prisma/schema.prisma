@@ -27,9 +27,8 @@ model Worker{
   id        String       @id @default(cuid())
   address   String       @unique
   submissions Submission[]
-  balanceIndex Int          @default(0)
-  pendingBalance Int          @default(0)
-  lockedBalance Int          @default(0)
+  pendingBalance Int          @default(0) //in lamports 10^9
+  lockedBalance Int          @default(0) //in lamports 10^9
 }
 
 
@@ -38,7 +37,7 @@ model Task{
   title     String
   type      TaskType
   signature String
-  amount    String
+  amount    Int          //in lamports 10^9
   options   Option[]
   done      Boolean      @default(false)
   userId    String
@@ -62,7 +61,7 @@ model Submission{
   option    Option     @relation(fields: [optionId], references: [id])
   taskId    String?
   task      Task?       @relation(fields: [taskId], references: [id])
-  amount    Int
+  amount    Int          //in lamports 10^9
   @@unique([workerId, taskId])
 }
 

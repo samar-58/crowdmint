@@ -29,6 +29,7 @@ model Worker{
   submissions Submission[]
   pendingBalance Int          @default(0) //in lamports 10^9
   lockedBalance Int          @default(0) //in lamports 10^9
+  payouts Payouts[]
 }
 
 
@@ -65,5 +66,18 @@ model Submission{
   @@unique([workerId, taskId])
 }
 
+model Payouts{
+  id        String       @id @default(cuid())
+  workerId  String
+  worker    Worker     @relation(fields: [workerId], references: [id])
+  amount    Int          //in lamports 10^9
+  signature String
+  status PayoutStatus
+}
 
+enum PayoutStatus{
+  PROCESSING
+  SUCCESS
+  FAILED
+}
 

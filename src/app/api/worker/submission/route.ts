@@ -9,6 +9,7 @@ export async function POST(req:NextRequest){
     const body = await req.json();
     const workerId = req.headers.get("x-worker-id");
     const parsedData = submissionSchema.safeParse(body);
+
     if(!parsedData.success){
         return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
@@ -19,12 +20,12 @@ if(!task){
     return NextResponse.json({ error: "No task found" }, { status: 404 });
 }
 
-if(task?.id === parsedData.data.taskId){
+if(task?.id !== parsedData.data.taskId){
     return NextResponse.json({ error: "Invalid Task Id" }, { status: 404 });
 }
-let amount = task.amount / LAMPORTS_PER_SOL / TotalWorkers;
+let amount = task.amount  / TotalWorkers;
 
-const submission = prisma.$transaction(async tx => {
+await prisma.$transaction(async tx => {
     let submission = await tx.submission.create({
         data:{
             workerId:workerId as string,
@@ -40,7 +41,7 @@ const submission = prisma.$transaction(async tx => {
         },
         data:{
             pendingBalance: {
-                increment: amount * LAMPORTS_PER_SOL,
+                increment: amount,
             },
         },
     })

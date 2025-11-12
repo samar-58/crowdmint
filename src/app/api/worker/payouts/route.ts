@@ -1,5 +1,4 @@
 import { prisma } from "@/utils/constants";
-import { error } from "console";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req:NextRequest){
@@ -52,6 +51,9 @@ await tx.payouts.create({
 })
 
 //all set to send txn to solscan
-
+return NextResponse.json({
+    message:"Payout is processing",
+    amount:worker.pendingBalance
+},{status:200})
 
 }

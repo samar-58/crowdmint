@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { usePresignedUrl } from "@/hooks/usePresignedUrl";
 import axios from "axios";
 
 export default function Upload() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const { data: presignedData, refetch, isFetching, error } = usePresignedUrl();
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,9 +59,8 @@ export default function Upload() {
 
       console.log("File uploaded successfully!");
       setSelectedFile(null);
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
+      if (fileRef.current) {
+        fileRef.current.value = '';
       }
     } catch (err) {
       console.error("Upload error:", err);
@@ -74,7 +74,7 @@ export default function Upload() {
     <div className="flex flex-col items-center justify-center h-screen gap-4 p-4">
       <h1 className="text-2xl font-bold">Upload</h1>
       <input
-        id="file-input"
+        ref={fileRef}
         type="file"
         className="w-full max-w-md p-2 border border-gray-300 rounded-md cursor-pointer"
         onChange={onFileSelect}

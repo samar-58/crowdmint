@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import { usePresignedUrl } from "@/hooks/usePresignedUrl";
+import axios from "axios";
 
 export default function Upload() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { data: presignedData, refetch, isFetching, error } = usePresignedUrl();
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,6 +20,8 @@ export default function Upload() {
       alert("Please select a file first");
       return;
     }
+    
+    setUploading(true);
     try {
       const { data } = await refetch(); 
       if (!data) {
@@ -26,20 +30,31 @@ export default function Upload() {
 
       const formData = new FormData();
       
-      Object.entries(data.fields).forEach(([key, value]) => {
-        formData.append(key, value as string);
-      });
-      
-      formData.append('file', selectedFile);
-
-      const uploadResponse = await fetch(data.url, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload file to S3");
+      if (data.fields.bucket) {
+        formData.set("bucket", data.fields.bucket);
       }
+      if (data.fields["X-Amz-Algorithm"]) {
+        formData.set("X-Amz-Algorithm", data.fields["X-Amz-Algorithm"]);
+      }
+      if (data.fields["X-Amz-Credential"]) {
+        formData.set("X-Amz-Credential", data.fields["X-Amz-Credential"]);
+      }
+      if (data.fields["X-Amz-Date"]) {
+        formData.set("X-Amz-Date", data.fields["X-Amz-Date"]);
+      }
+      if (data.fields.key) {
+        formData.set("key", data.fields.key);
+      }
+      if (data.fields.Policy) {
+        formData.set("Policy", data.fields.Policy);
+      }
+      if (data.fields["X-Amz-Signature"]) {
+        formData.set("X-Amz-Signature", data.fields["X-Amz-Signature"]);
+      }
+      
+      formData.append("file", selectedFile);
+
+      await axios.post(data.url, formData);
 
       console.log("File uploaded successfully!");
       setSelectedFile(null);
@@ -50,6 +65,8 @@ export default function Upload() {
     } catch (err) {
       console.error("Upload error:", err);
       alert("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -70,10 +87,10 @@ export default function Upload() {
       )}
       <button
         onClick={handleUpload}
-        disabled={!selectedFile || isFetching}
+        disabled={!selectedFile || isFetching || uploading}
         className="bg-blue-500 text-white p-2 rounded-md cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-600"
       >
-        {isFetching ? "Uploading..." : "Upload"}
+        {(isFetching || uploading) ? "Uploading..." : "Upload"}
       </button>
       {error && (
         <p className="text-red-500 text-sm">

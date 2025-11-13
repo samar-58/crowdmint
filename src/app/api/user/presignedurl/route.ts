@@ -6,8 +6,7 @@ export async function GET(req:NextRequest){
 const accessKey = process.env.AWS_ACCESS_KEY ?? "";
 const secretKey = process.env.AWS_SECRET_KEY ?? "";
 const bucketName = process.env.AWS_BUCKET_NAME ?? "";
-const AWS_REGION = process.env.AWS_REGION || "us-east-1";
-console.log(accessKey,secretKey,"accessKey,secretKey");
+const AWS_REGION = process.env.AWS_REGION;
 
 if(!accessKey || !secretKey){
     return NextResponse.json({ error: "AWS credentials not found" }, { status: 500 })
@@ -20,7 +19,6 @@ if(!accessKey || !secretKey){
         },
         region: AWS_REGION
     })
-
 
 const {url, fields} = await createPresignedPost(s3Client,{
     Bucket: bucketName,

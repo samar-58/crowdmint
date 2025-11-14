@@ -74,6 +74,73 @@ export const useAllTasks = () => {
     },
   });
 };
+interface NextTaskOption {
+  id: string;
+  imageUrl: string;
+  taskId: string;
+}
+
+interface NextTaskResponse {
+  task: {
+    id: string;
+    title: string;
+    amount: number;
+    options: NextTaskOption[];
+  };
+}
+
+interface SubmissionPayload {
+  taskId: string;
+  optionId: string;
+}
+
+interface SubmissionResponse {
+  message: string;
+  nextTask?: {
+    id: string;
+    title: string;
+    amount: number;
+    options: NextTaskOption[];
+  };
+}
+
+export const useNextTask = () => {
+  return useQuery<NextTaskResponse, Error>({
+    queryKey: ['nextTask'],
+    queryFn: async () => {
+      const response = await api.get<NextTaskResponse>('/api/worker/next-task', {
+        headers: {
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXVwZXowMDAyc2V5NmZwNGx5c3BzIiwicm9sZSI6IndvcmtlciIsImlhdCI6MTc2MzE0NTI5MH0.EyESYZd1MX2mJ6LBNWRrRUz4u_nxF4mgNvl42pSvrtQ',
+        }
+      });
+      return response.data;
+    },
+  });
+};
+
+export const useSubmitTask = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<SubmissionResponse, Error, SubmissionPayload>({
+    mutationFn: async (payload: SubmissionPayload) => {
+      const response = await api.post<SubmissionResponse>('/api/worker/submission', payload, {
+        headers: {
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXVwZXowMDAyc2V5NmZwNGx5c3BzIiwicm9sZSI6IndvcmtlciIsImlhdCI6MTc2MzE0NTI5MH0.EyESYZd1MX2mJ6LBNWRrRUz4u_nxF4mgNvl42pSvrtQ',
+        }
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Update the next task query with the new task data
+      if (data.nextTask) {
+        queryClient.setQueryData(['nextTask'], { task: data.nextTask });
+      } else {
+        // No more tasks, invalidate to show empty state
+        queryClient.invalidateQueries({ queryKey: ['nextTask'] });
+      }
+    },
+  });
+};
 
 
 

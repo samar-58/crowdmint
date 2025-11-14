@@ -1,5 +1,5 @@
-import Navbar from "@/components/Navbar";
-import Upload from "@/components/Upload";
+import Navbar from "@/components/common/Navbar";
+import Upload from "@/components/user/Upload";
 
 export default function Home() {
   return (

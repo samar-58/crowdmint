@@ -151,26 +151,43 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
   const canAddMore = totalImages < MAX_IMAGES;
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      <h1 className="text-2xl font-bold">Upload Images</h1>
+    <div className="bg-white rounded-2xl shadow-xl p-8 w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Upload Images</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Upload up to {MAX_IMAGES} images for your task
+          </p>
+        </div>
+        <div className="bg-blue-50 px-4 py-2 rounded-lg">
+          <p className="text-sm font-semibold text-blue-700">
+            {uploadedImages.length} / {MAX_IMAGES}
+          </p>
+          <p className="text-xs text-blue-600">Uploaded</p>
+        </div>
+      </div>
       
       {/* Image Grid */}
       {totalImages > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
           {/* Uploaded Images */}
           {uploadedImages.map((image, index) => (
             <div key={`uploaded-${index}-${image.key}`} className="relative group">
-              <img
-                src={image.url}
-                alt={`Uploaded ${index + 1}`}
-                className="w-full h-40 object-cover rounded-lg border-2 border-green-500"
-              />
-              <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                Uploaded
+              <div className="aspect-square overflow-hidden rounded-xl border-2 border-green-400 bg-gray-50">
+                <img
+                  src={image.url}
+                  alt={`Uploaded ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                />
+              </div>
+              <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2.5 py-1 rounded-full font-medium shadow-md">
+                ✓ Uploaded
               </div>
               <button
                 onClick={() => removeUploadedImage(index)}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:scale-110"
+                title="Remove image"
               >
                 ×
               </button>
@@ -180,17 +197,20 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
           {/* Pending Images */}
           {pendingImages.map((image, index) => (
             <div key={`pending-${index}-${image.previewUrl}`} className="relative group">
-              <img
-                src={image.previewUrl}
-                alt={`Pending ${index + 1}`}
-                className="w-full h-40 object-cover rounded-lg border-2 border-yellow-500"
-              />
-              <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
-                Pending
+              <div className="aspect-square overflow-hidden rounded-xl border-2 border-yellow-400 bg-gray-50">
+                <img
+                  src={image.previewUrl}
+                  alt={`Pending ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                />
+              </div>
+              <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2.5 py-1 rounded-full font-medium shadow-md">
+                ⏳ Pending
               </div>
               <button
                 onClick={() => removePendingImage(index)}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:scale-110"
+                title="Remove image"
               >
                 ×
               </button>
@@ -199,48 +219,87 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
         </div>
       )}
 
-      <div className="text-sm text-gray-600">
-        {uploadedImages.length} uploaded, {pendingImages.length} pending / {MAX_IMAGES} total
-      </div>
+      {/* Status Message */}
+      {totalImages > 0 && (
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">
+              <span className="font-semibold text-green-600">{uploadedImages.length}</span> uploaded, 
+              <span className="font-semibold text-yellow-600 ml-1">{pendingImages.length}</span> pending
+            </span>
+            <span className="text-gray-500">
+              {MAX_IMAGES - totalImages} slot{MAX_IMAGES - totalImages !== 1 ? 's' : ''} remaining
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Upload Section */}
       {canAddMore && (
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex flex-col items-center gap-2">
-            <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-8 rounded-lg border-2 border-dashed border-gray-300 transition-colors">
-              <div className="text-4xl text-gray-400">+</div>
-              <input
-                ref={fileRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={onFileSelect}
-                accept="image/*"
-                disabled={uploading}
-              />
-            </label>
-            <p className="text-sm text-gray-500">
-              Click to select images (max {MAX_IMAGES - totalImages} more)
-            </p>
-          </div>
+        <div className="flex flex-col items-center gap-4 mb-6">
+          <label className="cursor-pointer w-full group">
+            <div className="border-2 border-dashed border-gray-300 group-hover:border-blue-400 rounded-xl p-12 transition-all bg-gradient-to-br from-gray-50 to-blue-50 group-hover:from-blue-50 group-hover:to-purple-50">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 bg-blue-100 group-hover:bg-blue-200 rounded-full flex items-center justify-center transition-colors">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-gray-900 mb-1">
+                    Click to upload images
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    PNG, JPG, GIF up to 10MB (max {MAX_IMAGES - totalImages} more)
+                  </p>
+                </div>
+              </div>
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={onFileSelect}
+              accept="image/*"
+              disabled={uploading}
+            />
+          </label>
           
           {error && (
-            <p className="text-red-500 text-sm">
-              Error: {error instanceof Error ? error.message : "Unknown error"}
-            </p>
+            <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm font-medium">
+                ⚠️ Error: {error instanceof Error ? error.message : "Unknown error"}
+              </p>
+            </div>
           )}
         </div>
       )}
 
       {/* Upload Button */}
       {pendingImages.length > 0 && (
-        <button
-          onClick={uploadAllImages}
-          disabled={uploading}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {uploading ? "Uploading..." : `Upload ${pendingImages.length} Image${pendingImages.length > 1 ? 's' : ''}`}
-        </button>
+        <div className="flex justify-center pt-4 border-t border-gray-200">
+          <button
+            onClick={uploadAllImages}
+            disabled={uploading}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-3 rounded-xl disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+          >
+            {uploading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading {pendingImages.length} image{pendingImages.length > 1 ? 's' : ''}...
+              </span>
+            ) : (
+              `📤 Upload ${pendingImages.length} Image${pendingImages.length > 1 ? 's' : ''}`
+            )}
+          </button>
+        </div>
       )}
     </div>
   );

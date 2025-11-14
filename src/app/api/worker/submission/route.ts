@@ -49,10 +49,8 @@ await prisma.$transaction(async tx => {
 
 
 const nextTask = await getNextTask(workerId as string);
-if(nextTask){
-    return NextResponse.json({ message: "Submission created successfully" ,nextTask:nextTask}, { status: 200 });
-}
-else{
-    return NextResponse.json({ message: "No next task found" }, { status: 404 });
-}
+return NextResponse.json({ 
+    message: nextTask ? "Submission created successfully" : "Submission created successfully - All tasks completed!", 
+    nextTask: nextTask || null
+}, { status: 200 });
 }

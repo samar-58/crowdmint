@@ -135,8 +135,8 @@ export const useSubmitTask = () => {
       if (data.nextTask) {
         queryClient.setQueryData(['nextTask'], { task: data.nextTask });
       } else {
-        // No more tasks, invalidate to show empty state
-        queryClient.invalidateQueries({ queryKey: ['nextTask'] });
+        // No more tasks, set query data to undefined to show "All Done" state
+        queryClient.setQueryData(['nextTask'], undefined);
       }
     },
   });

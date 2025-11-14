@@ -6,28 +6,64 @@ export default function NextTask() {
     const { data, isLoading, error } = useNextTask();
     const submitTask = useSubmitTask();
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const handleOptionClick = async (optionId: string) => {
-        if (submitTask.isPending || !data?.task) return;
+        if (submitTask.isPending || !data?.task || isTransitioning) return;
 
         setSelectedOption(optionId);
         
         try {
-            await submitTask.mutateAsync({
+            setIsTransitioning(true);
+            
+            const result = await submitTask.mutateAsync({
                 taskId: data.task.id,
                 optionId: optionId,
             });
             
+            // Wait a bit to show success, then transition
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // If no next task, the query will be undefined and show "All Done"
+            // If there's a next task, it will automatically appear
+            setIsTransitioning(false);
             setSelectedOption(null);
         } catch (err) {
             console.error("Submission failed:", err);
             setSelectedOption(null);
+            setIsTransitioning(false);
         }
     };
 
     const formatAmount = (amount: number) => {
         return (amount / 1_000_000_000).toFixed(4);
     };
+
+    // Show transitioning/success state
+    if (isTransitioning) {
+        return (
+            <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
+                <div className="bg-white rounded-2xl shadow-xl p-16 max-w-md w-full text-center">
+                    <div className="mb-6">
+                        <div className="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-4 animate-pulse">
+                            <svg className="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                        Perfect! ✨
+                    </h2>
+                    <p className="text-gray-600 text-lg">
+                        Your submission was successful!
+                    </p>
+                    <div className="mt-6">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -48,21 +84,28 @@ export default function NextTask() {
 
     if (isNoTasksError || !data?.task) {
         return (
-            <div className="min-h-[80vh] flex items-center justify-center p-4">
+            <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-blue-50">
                 <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md w-full text-center">
-                    <div className="text-6xl mb-4">🎉</div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">All Done!</h2>
+                    <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                        Congratulations!
+                    </h2>
                     <p className="text-gray-600 text-lg mb-2">
-                        No more tasks available at the moment.
+                        You've completed all available tasks!
                     </p>
                     <p className="text-gray-500 text-sm mb-6">
-                        Check back later for more opportunities to earn!
+                        Great job! Check back later for more opportunities to earn.
                     </p>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                        <p className="text-green-700 font-medium text-sm">
+                            Your rewards have been added to your pending balance
+                        </p>
+                    </div>
                     <button
                         onClick={() => window.location.reload()}
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl font-medium transform hover:scale-105"
                     >
-                        🔄 Refresh
+                        🔄 Check for New Tasks
                     </button>
                 </div>
             </div>
@@ -123,8 +166,8 @@ export default function NextTask() {
                             <button
                                 key={option.id}
                                 onClick={() => handleOptionClick(option.id)}
-                                disabled={submitTask.isPending}
-                                className={`group relative rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                                disabled={submitTask.isPending || isTransitioning}
+                                className={`group relative rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:opacity-60 ${
                                     selectedOption === option.id
                                         ? 'ring-4 ring-blue-500 shadow-2xl'
                                         : 'ring-2 ring-gray-200 hover:ring-blue-400 shadow-lg hover:shadow-xl'
@@ -171,14 +214,6 @@ export default function NextTask() {
                     </div>
 
                     {/* Submission Status */}
-                    {submitTask.isPending && (
-                        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-blue-700 text-center font-medium">
-                                Submitting your choice...
-                            </p>
-                        </div>
-                    )}
-
                     {submitTask.isError && (
                         <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                             <p className="text-red-600 text-center font-medium">

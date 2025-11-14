@@ -3,7 +3,7 @@ import Upload from "@/components/Upload";
 
 export default function Home() {
   return (
-<div>
+<div className="h-screen w-screen">
    <Navbar />
     <Upload />
 </div>

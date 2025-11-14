@@ -1,104 +1,113 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { usePresignedUrl } from "@/hooks/usePresignedUrl";
-import axios from "axios";
-import api from "@/lib/api";
+import { useState } from "react";
+import UploadImage from "./UploadImage";
+import { useCreateTask } from "@/hooks/useTask";
+
+interface UploadedImage {
+  key: string;
+  url: string;
+}
 
 export default function Upload() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  const { data: presignedData, refetch, isFetching, error } = usePresignedUrl();
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const createTask = useCreateTask();
 
-  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+  const handleCreateTask = async () => {
+    if (!title.trim()) {
+      alert("Please enter a task description");
+      return;
+    }
+
+    if (!amount || parseFloat(amount) <= 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
+
+    if (uploadedImages.length === 0) {
+      alert("Please upload at least one image");
+      return;
+    }
+
+    try {
+      const result = await createTask.mutateAsync({
+        title: title.trim(),
+        type: "IMAGE",
+        signature: "hardcoded-signature-placeholder",
+        amount: parseFloat(amount),
+        options: uploadedImages.map(img => ({ imageUrl: img.url })),
+      });
+
+      alert(`Task created successfully! Task ID: ${result.taskId}`);
+      
+      // Reset form
+      setTitle("");
+      setAmount("");
+      setUploadedImages([]);
+    } catch (error) {
+      console.error("Failed to create task:", error);
+      alert("Failed to create task. Please try again.");
     }
   };
 
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("Please select a file first");
-      return;
-    }
-    
-    setUploading(true);
-    try {
-      const data = await refetch({
-        "x-file-type": selectedFile.type,
-      });
-      
-      if (!data) {
-        throw new Error("Failed to get presigned URL");
-      }
-
-      const formData = new FormData();
-      
-      if (data.fields.bucket) {
-        formData.set("bucket", data.fields.bucket);
-      }
-      if (data.fields["X-Amz-Algorithm"]) {
-        formData.set("X-Amz-Algorithm", data.fields["X-Amz-Algorithm"]);
-      }
-      if (data.fields["X-Amz-Credential"]) {
-        formData.set("X-Amz-Credential", data.fields["X-Amz-Credential"]);
-      }
-      if (data.fields["X-Amz-Date"]) {
-        formData.set("X-Amz-Date", data.fields["X-Amz-Date"]);
-      }
-      if (data.fields.key) {
-        formData.set("key", data.fields.key);
-      }
-      if (data.fields.Policy) {
-        formData.set("Policy", data.fields.Policy);
-      }
-      if (data.fields["X-Amz-Signature"]) {
-        formData.set("X-Amz-Signature", data.fields["X-Amz-Signature"]);
-      }
-      formData.append("Content-Type", selectedFile.type);
-      formData.append("file", selectedFile);
-      await axios.post(data.url, formData);
-
-      console.log("File uploaded successfully!",data.fields);
-      setSelectedFile(null);
-      if (fileRef.current) {
-        fileRef.current.value = '';
-      }
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert("Upload failed. Please try again.");
-    } finally {
-      setUploading(false);
-    }
+  const handleImagesChange = (images: UploadedImage[]) => {
+    setUploadedImages(images);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-4 p-4">
-      <h1 className="text-2xl font-bold">Upload</h1>
-      <input
-        ref={fileRef}
-        type="file"
-        className="w-full max-w-md p-2 border border-gray-300 rounded-md cursor-pointer"
-        onChange={onFileSelect}
-        accept="image/*"
-      />
-      {selectedFile && (
-        <p className="text-sm text-gray-600">
-          Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
-        </p>
+    <div className="flex flex-col justify-center items-center gap-6 p-8">
+      <h1 className="text-3xl font-bold">Create New Task</h1>
+
+      {/* Task Description Input */}
+      <div className="flex flex-col gap-2 w-full max-w-md">
+        <label htmlFor="title" className="font-semibold text-gray-700">
+          Task Description
+        </label>
+        <input
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter your task description"
+          className="h-12 px-4 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900"
+        />
+      </div>
+
+      {/* Amount Input */}
+      <div className="flex flex-col gap-2 w-full max-w-md">
+        <label htmlFor="amount" className="font-semibold text-gray-700">
+          Amount (SOL)
+        </label>
+        <input
+          id="amount"
+          type="number"
+          step="0.01"
+          min="0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Enter amount in SOL"
+          className="h-12 px-4 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900"
+        />
+      </div>
+
+      {/* Upload Images Component */}
+      <UploadImage onImagesChange={handleImagesChange} />
+
+      {/* Create Task Button */}
+      {uploadedImages.length > 0 && (
+        <button
+          onClick={handleCreateTask}
+          disabled={createTask.isPending}
+          className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-lg"
+        >
+          {createTask.isPending ? "Creating Task..." : "Create Task"}
+        </button>
       )}
-      <button
-        onClick={handleUpload}
-        disabled={!selectedFile || isFetching || uploading}
-        className="bg-blue-500 text-white p-2 rounded-md cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-600"
-      >
-        {(isFetching || uploading) ? "Uploading..." : "Upload"}
-      </button>
-      {error && (
+
+      {createTask.isError && (
         <p className="text-red-500 text-sm">
-          Error: {error instanceof Error ? error.message : "Unknown error"}
+          Error: {createTask.error?.message || "Failed to create task"}
         </p>
       )}
     </div>

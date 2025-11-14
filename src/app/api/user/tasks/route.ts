@@ -40,7 +40,7 @@ export async function POST(req:NextRequest){
 
 
 export async function GET(req:NextRequest){
- const taskId = z.string().safeParse(req.nextUrl.searchParams.get("taskId"));
+ const taskId = z.string().optional().safeParse(req.nextUrl.searchParams.get("taskId"));
 
 const userId = req.headers.get("x-user-id");
 

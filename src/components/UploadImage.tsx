@@ -159,7 +159,7 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
           {/* Uploaded Images */}
           {uploadedImages.map((image, index) => (
-            <div key={image.key} className="relative group">
+            <div key={`uploaded-${index}-${image.key}`} className="relative group">
               <img
                 src={image.url}
                 alt={`Uploaded ${index + 1}`}
@@ -179,7 +179,7 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
           
           {/* Pending Images */}
           {pendingImages.map((image, index) => (
-            <div key={image.previewUrl} className="relative group">
+            <div key={`pending-${index}-${image.previewUrl}`} className="relative group">
               <img
                 src={image.previewUrl}
                 alt={`Pending ${index + 1}`}

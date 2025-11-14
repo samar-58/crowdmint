@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { S3Client } from "@aws-sdk/client-s3"
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post"
-import { error } from "console";
+import { randomUUID } from "crypto";
 
 export async function GET(req:NextRequest){
 const accessKey = process.env.AWS_ACCESS_KEY ?? "";
@@ -26,7 +26,8 @@ if(!accessKey || !secretKey){
         return NextResponse.json({error:"Invalid File Type"},{status:400});
     }
 const ext = fileType.split("/")[1];
-const key = `/crowdmint/${userId}/${Date.now()}.${ext}`;
+const uniqueId = randomUUID();
+const key = `/crowdmint/${userId}/${Date.now()}-${uniqueId}.${ext}`;
 
 const {url, fields} = await createPresignedPost(s3Client,{
     Bucket: bucketName,

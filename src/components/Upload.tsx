@@ -2,13 +2,15 @@
 import { useState } from "react";
 import UploadImage from "./UploadImage";
 import { useCreateTask } from "@/hooks/useTask";
-
+import { useRouter } from "next/navigation";
+  
 interface UploadedImage {
   key: string;
   url: string;
 }
 
 export default function Upload() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
@@ -40,8 +42,7 @@ export default function Upload() {
       });
 
       alert(`Task created successfully! Task ID: ${result.taskId}`);
-      
-      // Reset form
+      router.push(`/user/tasks`);
       setTitle("");
       setAmount("");
       setUploadedImages([]);

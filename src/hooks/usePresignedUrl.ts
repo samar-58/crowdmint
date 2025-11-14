@@ -28,8 +28,9 @@ export const usePresignedUrl = (options?: UsePresignedUrlOptions) => {
   });
 
   const refetchWithHeaders = async (customHeaders: Record<string, string>) => {
+    const uniqueKey = `${Date.now()}-${Math.random()}`;
     return queryClient.fetchQuery<PresignedUrlResponse>({
-      queryKey: ['presignedUrl', customHeaders],
+      queryKey: ['presignedUrl', customHeaders, uniqueKey],
       queryFn: async () => {
         const response = await api.get<PresignedUrlResponse>('/api/user/presignedurl', {
           headers: {
@@ -39,6 +40,8 @@ export const usePresignedUrl = (options?: UsePresignedUrlOptions) => {
         });
         return response.data;
       },
+      staleTime: 0,
+      gcTime: 0,
     });
   };
 

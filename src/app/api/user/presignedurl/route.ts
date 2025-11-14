@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post"
+import { error } from "console";
 
 export async function GET(req:NextRequest){
 const accessKey = process.env.AWS_ACCESS_KEY ?? "";
@@ -11,7 +12,6 @@ const AWS_REGION = process.env.AWS_REGION;
 if(!accessKey || !secretKey){
     return NextResponse.json({ error: "AWS credentials not found" }, { status: 500 })
 }
-    const userId = req.headers.get('x-user-id');
     const s3Client = new S3Client({
         credentials:{
             accessKeyId: accessKey,
@@ -20,9 +20,20 @@ if(!accessKey || !secretKey){
         region: AWS_REGION
     })
 
+    const userId = req.headers.get('x-user-id');
+    const fileType = req.headers.get("x-file-type");
+    if(!fileType || !fileType.startsWith("image/")){
+        return NextResponse.json({error:"Invalid File Type"},{status:400});
+    }
+const ext = fileType.split("/")[1];
+const key = `/crowdmint/${userId}/${Date.now()}.${ext}`;
+
 const {url, fields} = await createPresignedPost(s3Client,{
     Bucket: bucketName,
-    Key: `/crowdmint/${userId}/${Date.now()}.jpg`,
+    Key :key,
+    Fields:{
+    "Content-Type": fileType,
+    },
     Conditions: [
         ["content-length-range", 1, 10 * 1024 * 1024]
       ],

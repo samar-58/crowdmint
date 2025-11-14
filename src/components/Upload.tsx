@@ -1,7 +1,8 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePresignedUrl } from "@/hooks/usePresignedUrl";
 import axios from "axios";
+import api from "@/lib/api";
 
 export default function Upload() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -16,6 +17,7 @@ export default function Upload() {
     }
   };
 
+
   const handleUpload = async () => {
     if (!selectedFile) {
       alert("Please select a file first");
@@ -24,7 +26,10 @@ export default function Upload() {
     
     setUploading(true);
     try {
-      const { data } = await refetch(); 
+      const data = await refetch({
+        "x-file-type": selectedFile.type,
+      });
+      
       if (!data) {
         throw new Error("Failed to get presigned URL");
       }
@@ -52,12 +57,11 @@ export default function Upload() {
       if (data.fields["X-Amz-Signature"]) {
         formData.set("X-Amz-Signature", data.fields["X-Amz-Signature"]);
       }
-      
+      formData.append("Content-Type", selectedFile.type);
       formData.append("file", selectedFile);
-
       await axios.post(data.url, formData);
 
-      console.log("File uploaded successfully!");
+      console.log("File uploaded successfully!",data.fields);
       setSelectedFile(null);
       if (fileRef.current) {
         fileRef.current.value = '';

@@ -31,7 +31,6 @@ export async function POST(req:NextRequest){
         imageUrl:option.imageUrl,
         taskId:task.id,
     }))
-
    })
    return task;
     })

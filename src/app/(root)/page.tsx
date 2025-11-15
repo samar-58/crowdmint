@@ -4,7 +4,7 @@ import Upload from "@/components/user/Upload";
 export default function Home() {
   return (
 <div className="h-screen w-screen">
-   <Navbar />
+   <Navbar role="unsigned" />
     <Upload />
 </div>
   );

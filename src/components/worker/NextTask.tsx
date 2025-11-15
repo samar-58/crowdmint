@@ -21,11 +21,8 @@ export default function NextTask() {
                 optionId: optionId,
             });
             
-            // Wait a bit to show success, then transition
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // If no next task, the query will be undefined and show "All Done"
-            // If there's a next task, it will automatically appear
             setIsTransitioning(false);
             setSelectedOption(null);
         } catch (err) {
@@ -39,7 +36,6 @@ export default function NextTask() {
         return (amount / 1_000_000_000).toFixed(4);
     };
 
-    // Show transitioning/success state
     if (isTransitioning) {
         return (
             <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
@@ -135,7 +131,6 @@ export default function NextTask() {
     return (
         <div className="min-h-[80vh] bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
-                {/* Task Header */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
@@ -155,7 +150,6 @@ export default function NextTask() {
                     </div>
                 </div>
 
-                {/* Options Grid */}
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                     <h2 className="text-xl font-semibold text-gray-900 mb-6">
                         Choose one option:
@@ -173,7 +167,6 @@ export default function NextTask() {
                                         : 'ring-2 ring-gray-200 hover:ring-blue-400 shadow-lg hover:shadow-xl'
                                 }`}
                             >
-                                {/* Image Container */}
                                 <div className="aspect-square bg-gray-100 overflow-hidden">
                                     <img
                                         src={option.imageUrl}
@@ -182,14 +175,12 @@ export default function NextTask() {
                                     />
                                 </div>
 
-                                {/* Option Label */}
                                 <div className="absolute top-3 left-3 bg-white px-4 py-2 rounded-full shadow-md">
                                     <p className="text-sm font-bold text-gray-900">
                                         Option {index + 1}
                                     </p>
                                 </div>
 
-                                {/* Selected Indicator */}
                                 {selectedOption === option.id && (
                                     <div className="absolute inset-0 bg-blue-600 bg-opacity-20 flex items-center justify-center">
                                         <div className="bg-white rounded-full p-3 shadow-xl">
@@ -207,13 +198,11 @@ export default function NextTask() {
                                     </div>
                                 )}
 
-                                {/* Hover Effect */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             </button>
                         ))}
                     </div>
 
-                    {/* Submission Status */}
                     {submitTask.isError && (
                         <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                             <p className="text-red-600 text-center font-medium">
@@ -222,8 +211,7 @@ export default function NextTask() {
                         </div>
                     )}
                 </div>
-
-                {/* Instructions */}
+                    
                 <div className="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-100">
                     <div className="flex items-start gap-3">
                         <div className="text-2xl">💡</div>

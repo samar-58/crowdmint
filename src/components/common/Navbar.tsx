@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
 
 export default function Navbar({role}: {role: UserRole | "unsigned"}): React.ReactNode{
-    const { publicKey, signMessage } = useWallet();
+    const { publicKey, signMessage ,connected} = useWallet();
     const router = useRouter();
     const hasAttemptedAuth = useRef(false);
     
@@ -23,37 +23,24 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
     } = useAuthStore();
     
     const signIn = async () => {
-        if (role === "unsigned" || !publicKey || !signMessage || isAuthenticating) {
+        if (role === "unsigned" || !connected || !signMessage || isAuthenticating) {
             return;
         }
 
         setAuthenticating(true);
         
         try {
-            const existingToken = getToken(role);
-            
-            if (existingToken) {
-                const isValid = await verifyToken(role);
-                if (isValid) {
-                    console.log(`Valid ${role} token found, skipping sign-in`);
-                    setAuthenticating(false);
-                    return;
-                } else {
-                    removeToken(role);
-                }
-            }
             
             const signature = await signMessage(new TextEncoder().encode("Sign in to Crowdmint"));
             
             const response = await axios.post(`/api/${role}/signin`, {
-                publicKey: publicKey.toString(),
+                publicKey: publicKey?.toString(),
                 signature
             });
             
-            if (response.data.token) {
+            if (response.status === 200 && response.data.token) {
                 setToken(role, response.data.token);
                 console.log(`${role} signed in successfully`);
-                
                 router.refresh();
             }
         } catch (error) {
@@ -66,16 +53,16 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
     };
     
     useEffect(() => {
-        if (publicKey && !hasAttemptedAuth.current && role !== "unsigned") {
+        if (connected && !hasAttemptedAuth.current && role !== "unsigned") {
             hasAttemptedAuth.current = true;
             signIn();
         }
         
-        if (!publicKey) {
+        if (!connected) {
             hasAttemptedAuth.current = false;
             setAuthenticating(false);
         }
-    }, [publicKey, role]);
+    }, [connected, role]);
     return (
         <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,9 +74,11 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                         >
                             Crowdmint
                         </Link>
+                        {role === "user" && (
+                            <>
                         <div className="hidden md:flex space-x-1">
                             <Link
-                                href="/"
+                                href="/user/tasks/create"
                                 className="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
                             >
                                 Create Task
@@ -101,13 +90,15 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                                 View Tasks
                             </Link>
                         </div>
+                        </>
+                        )}
                     </div>
 
                     {/* Connect Wallet Button */}
                     {/* <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
                         Connect Wallet
                     </button> */}
-                    {publicKey ? (
+                    {connected ? (
                         <WalletDisconnectButton />
                     ) : (
                         <WalletMultiButton />
@@ -117,6 +108,8 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
 
             {/* Mobile Navigation */}
             <div className="md:hidden border-t border-gray-200 bg-white">
+                {role === "user" && (
+                <>
                 <div className="px-4 py-3 space-y-1">
                     <Link
                         href="/"
@@ -131,6 +124,8 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                         View Tasks
                     </Link>
                 </div>
+                </>
+                )}
             </div>
         </nav>
     );

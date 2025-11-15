@@ -5,45 +5,38 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletConnectButton, WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
-import { getToken, setToken, removeToken, getAuthHeaders } from "@/utils/auth";
-import type { UserRole } from "@/utils/auth";
+import { useEffect, useRef } from "react";
+import { useAuthStore, type UserRole } from "@/store/authStore";
 
 export default function Navbar({role}: {role: UserRole | "unsigned"}): React.ReactNode{
     const { publicKey, signMessage } = useWallet();
     const router = useRouter();
-    const [isAuthenticating, setIsAuthenticating] = useState(false);
     const hasAttemptedAuth = useRef(false);
     
-
-    const verifyToken = async (token: string, userRole: UserRole): Promise<boolean> => {
-        try {
-            const response = await axios.get(`/api/${userRole}/health`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            return response.status === 200;
-        } catch (error) {
-            return false;
-        }
-    };
+    const { 
+        getToken, 
+        setToken, 
+        removeToken, 
+        verifyToken,
+        isAuthenticating,
+        setAuthenticating 
+    } = useAuthStore();
     
     const signIn = async () => {
         if (role === "unsigned" || !publicKey || !signMessage || isAuthenticating) {
             return;
         }
 
-        setIsAuthenticating(true);
+        setAuthenticating(true);
         
         try {
             const existingToken = getToken(role);
             
             if (existingToken) {
-                const isValid = await verifyToken(existingToken, role);
+                const isValid = await verifyToken(role);
                 if (isValid) {
                     console.log(`Valid ${role} token found, skipping sign-in`);
-                    setIsAuthenticating(false);
+                    setAuthenticating(false);
                     return;
                 } else {
                     removeToken(role);
@@ -68,7 +61,7 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
             if (axios.isAxiosError(error) && error.response?.status !== 400) {
             }
         } finally {
-            setIsAuthenticating(false);
+            setAuthenticating(false);
         }
     };
     
@@ -80,7 +73,7 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
         
         if (!publicKey) {
             hasAttemptedAuth.current = false;
-            setIsAuthenticating(false);
+            setAuthenticating(false);
         }
     }, [publicKey, role]);
     return (

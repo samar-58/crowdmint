@@ -17,10 +17,7 @@ export const usePresignedUrl = (options?: UsePresignedUrlOptions) => {
     queryKey: ['presignedUrl', options?.headers],
     queryFn: async () => {
       const response = await api.get<PresignedUrlResponse>('/api/user/presignedurl', {
-        headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXh0MGowMDAzc2V5NjJiNnBuYWR4Iiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjI5NzI1NTN9.7upGD1Gm-k8A1sLk56nwvs25JEt8YESr3k2AplZTC8c',
-          ...options?.headers,
-        }
+        headers: options?.headers,
       });
       return response.data;
     },
@@ -33,10 +30,7 @@ export const usePresignedUrl = (options?: UsePresignedUrlOptions) => {
       queryKey: ['presignedUrl', customHeaders, uniqueKey],
       queryFn: async () => {
         const response = await api.get<PresignedUrlResponse>('/api/user/presignedurl', {
-          headers: {
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXh0MGowMDAzc2V5NjJiNnBuYWR4Iiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjI5NzI1NTN9.7upGD1Gm-k8A1sLk56nwvs25JEt8YESr3k2AplZTC8c',
-            ...customHeaders,
-          }
+          headers: customHeaders,
         });
         return response.data;
       },

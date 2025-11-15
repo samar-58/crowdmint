@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { getToken, removeToken } from '@/utils/auth';
-import type { UserRole } from '@/utils/auth';
+import { getTokenFromStore, removeTokenFromStore, type UserRole } from '@/store/authStore';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || '',
@@ -25,7 +24,7 @@ api.interceptors.request.use(
     }
     
     if (role) {
-      const token = getToken(role);
+      const token = getTokenFromStore(role);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -53,7 +52,7 @@ api.interceptors.response.use(
         }
         
         if (role) {
-          removeToken(role);
+          removeTokenFromStore(role);
         }
       }
     }
@@ -64,7 +63,7 @@ api.interceptors.response.use(
 export default api;
 
 /**
-    * Create an API instance for a specific role
+ * Create an API instance for a specific role
  */
 export function createRoleApi(role: UserRole) {
   const roleApi = axios.create({
@@ -77,7 +76,7 @@ export function createRoleApi(role: UserRole) {
   roleApi.interceptors.request.use(
     (config) => {
       if (typeof window !== 'undefined') {
-        const token = getToken(role);
+        const token = getTokenFromStore(role);
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -91,7 +90,7 @@ export function createRoleApi(role: UserRole) {
     (response) => response,
     (error) => {
       if (error.response?.status === 401 && typeof window !== 'undefined') {
-        removeToken(role);
+        removeTokenFromStore(role);
       }
       return Promise.reject(error);
     }

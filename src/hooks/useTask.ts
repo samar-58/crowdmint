@@ -42,11 +42,7 @@ export const useCreateTask = () => {
   
   return useMutation<CreateTaskResponse, Error, CreateTaskPayload>({
     mutationFn: async (payload: CreateTaskPayload) => {
-      const response = await api.post<CreateTaskResponse>('/api/user/tasks', payload, {
-        headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXh0MGowMDAzc2V5NjJiNnBuYWR4Iiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjI5NzI1NTN9.7upGD1Gm-k8A1sLk56nwvs25JEt8YESr3k2AplZTC8c',
-        }
-      });
+      const response = await api.post<CreateTaskResponse>('/api/user/tasks', payload);
       return response.data;
     },
     onSuccess: () => {
@@ -59,11 +55,7 @@ export const useAllTasks = () => {
   return useQuery<Task[], Error>({
     queryKey: ['allTasks'],
     queryFn: async () => {
-      const response = await api.get<TasksResponse>('/api/user/all-tasks',{
-        headers:{
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXh0MGowMDAzc2V5NjJiNnBuYWR4Iiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjI5NzI1NTN9.7upGD1Gm-k8A1sLk56nwvs25JEt8YESr3k2AplZTC8c',
-        }
-      });
+      const response = await api.get<TasksResponse>('/api/user/all-tasks');
       
       const transformedTasks: Task[] = response.data.res.map(task => ({
         ...task,
@@ -108,11 +100,7 @@ export const useNextTask = () => {
   return useQuery<NextTaskResponse, Error>({
     queryKey: ['nextTask'],
     queryFn: async () => {
-      const response = await api.get<NextTaskResponse>('/api/worker/next-task', {
-        headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXVwZXowMDAyc2V5NmZwNGx5c3BzIiwicm9sZSI6IndvcmtlciIsImlhdCI6MTc2MzE0NTI5MH0.EyESYZd1MX2mJ6LBNWRrRUz4u_nxF4mgNvl42pSvrtQ',
-        }
-      });
+      const response = await api.get<NextTaskResponse>('/api/worker/next-task');
       return response.data;
     },
   });
@@ -123,11 +111,7 @@ export const useSubmitTask = () => {
   
   return useMutation<SubmissionResponse, Error, SubmissionPayload>({
     mutationFn: async (payload: SubmissionPayload) => {
-      const response = await api.post<SubmissionResponse>('/api/worker/submission', payload, {
-        headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWh0ZXVwZXowMDAyc2V5NmZwNGx5c3BzIiwicm9sZSI6IndvcmtlciIsImlhdCI6MTc2MzE0NTI5MH0.EyESYZd1MX2mJ6LBNWRrRUz4u_nxF4mgNvl42pSvrtQ',
-        }
-      });
+      const response = await api.post<SubmissionResponse>('/api/worker/submission', payload);
       return response.data;
     },
     onSuccess: (data) => {

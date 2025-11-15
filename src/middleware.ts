@@ -8,6 +8,9 @@ export async function middleware(req: NextRequest) {
   if (pathname === '/api/user/signin' || pathname === '/api/worker/signin') {
     return NextResponse.next();
   }
+  
+  // Health endpoints still need auth to verify tokens
+  // They will pass through middleware to verify role and token validity
 
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;

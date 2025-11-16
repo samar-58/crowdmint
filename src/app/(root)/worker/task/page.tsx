@@ -1,13 +1,14 @@
-import Navbar from "@/components/common/Navbar";
+'use client';
+
 import NextTask from "@/components/worker/NextTask";
+import { RoleGuard } from "@/components/guards/RoleGuard";
 
 export default function TaskPage(){
     return (
-        <>
+        <RoleGuard allowedRole="worker">
             <div className="min-h-screen bg-gray-50 ">
-            <Navbar role="worker" />
                 <NextTask />
             </div>
-        </>
+        </RoleGuard>
     )
 }

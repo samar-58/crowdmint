@@ -1,7 +1,7 @@
 "use client";
 
-import Navbar from "@/components/common/Navbar";
 import { useAllTasks } from "@/hooks/useTask";
+import { RoleGuard } from "@/components/guards/RoleGuard";
 
 export default function TasksPage() {
     const { data: tasks, isLoading: loading, error } = useAllTasks();
@@ -12,22 +12,20 @@ export default function TasksPage() {
 
     if (loading) {
         return (
-            <>
-                <Navbar role="user" />
+            <RoleGuard allowedRole="user">
                 <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading tasks...</p>
                     </div>
                 </div>
-            </>
+            </RoleGuard>
         );
     }
 
     if (error) {
         return (
-            <>
-                <Navbar role="user" />
+            <RoleGuard allowedRole="user">
                 <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                     <div className="text-center">
                         <div className="text-red-500 text-6xl mb-4">⚠️</div>
@@ -41,14 +39,13 @@ export default function TasksPage() {
                         </button>
                     </div>
                 </div>
-            </>
+            </RoleGuard>
         );
     }
 
     if (!tasks || tasks.length === 0) {
         return (
-            <>
-                <Navbar role="user" />
+            <RoleGuard allowedRole="user">
                 <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                     <div className="text-center">
                         <div className="text-gray-400 text-6xl mb-4">📋</div>
@@ -56,13 +53,12 @@ export default function TasksPage() {
                         <p className="text-gray-600">No tasks have been created yet. Be the first to create one!</p>
                     </div>
                 </div>
-            </>
+            </RoleGuard>
         );
     }
 
     return (
-        <>
-            <Navbar role="user" />
+        <RoleGuard allowedRole="user">
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="mb-8">
@@ -170,6 +166,6 @@ export default function TasksPage() {
                     </div>
                 </div>
             </div>
-        </>
+        </RoleGuard>
     );
 }

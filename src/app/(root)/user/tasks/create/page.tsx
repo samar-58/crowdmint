@@ -1,11 +1,12 @@
-import Navbar from "@/components/common/Navbar";
+'use client';
+
 import Upload from "@/components/user/Upload";
+import { RoleGuard } from "@/components/guards/RoleGuard";
 
 export default function CreateTaskPage() {
     return (
-        <>
-        <Navbar role="user" />
-        <Upload />
-        </>
+        <RoleGuard allowedRole="user">
+            <Upload />
+        </RoleGuard>
     );
 }

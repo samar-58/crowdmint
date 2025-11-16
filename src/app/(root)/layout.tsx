@@ -8,8 +8,20 @@ import {  WalletModalProvider, WalletDisconnectButton, WalletMultiButton } from 
 import { clusterApiUrl } from "@solana/web3.js";
 import { useMemo } from "react";
 
-// Default styles that can be overridden by your app
 import '@solana/wallet-adapter-react-ui/styles.css';
+import Navbar from "@/components/common/Navbar";
+import { RoleProvider, useRole } from "@/contexts/RoleContext";
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
+    const { selectedRole } = useRole();
+    
+    return (
+        <>
+            <Navbar role={selectedRole} />
+            {children}
+        </>
+    );
+}
 
 export default function RootLayout({
   children,
@@ -19,13 +31,18 @@ export default function RootLayout({
     const network = WalletAdapterNetwork.Devnet;
     const endpoint = useMemo(() => clusterApiUrl(network), [network]);
     const wallets = useMemo(() => [], [network]);
-  return (
-    <ConnectionProvider endpoint={endpoint}>
-    <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-            {children}
-        </WalletModalProvider>
-    </WalletProvider>
-</ConnectionProvider>
-  );
+    
+    return (
+        <ConnectionProvider endpoint={endpoint}>
+            <WalletProvider wallets={wallets} autoConnect>
+                <WalletModalProvider>
+                    <RoleProvider>
+                        <LayoutContent>
+                            {children}
+                        </LayoutContent>
+                    </RoleProvider>
+                </WalletModalProvider>
+            </WalletProvider>
+        </ConnectionProvider>
+    );
 }

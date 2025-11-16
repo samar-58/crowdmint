@@ -3,11 +3,14 @@ import { LAMPORTS_PER_SOL, prisma } from "@/utils/constants";
 import { NextRequest, NextResponse } from "next/server";
 import { TaskType } from "../../../../../generated/prisma/client";
 import z from "zod";
-
+import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
+import { PARENT_WALLET_ADDRESS } from "@/utils/constants";
 
 export async function POST(req:NextRequest){
+    const userId = req.headers.get("x-user-id");
     const body = await req.json();
     const parsedData = createTaskSchema.safeParse(body);
+    const connection = new Connection(clusterApiUrl("devnet"));
 
     if(!parsedData.success){
         return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -15,6 +18,34 @@ export async function POST(req:NextRequest){
     if(!req.headers.get("x-user-id")){
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const user = await prisma.user.findUnique({
+        where:{
+            id:userId as string,
+        }
+    })
+    console.log(user?.address,"user");
+    if(!user){
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+const transaction = await connection.getTransaction(parsedData.data.signature,{
+    maxSupportedTransactionVersion:1,
+})
+console.log(transaction,"transaction");
+
+if((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== parsedData.data.amount * 10**9){
+    return NextResponse.json({ error: "Transaction signature/amount is invalid" }, { status: 404 });
+}
+if(transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS)
+    {
+    return NextResponse.json({ error: "Transaction sent to wrong wallet" }, { status: 404 });
+}
+if(transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== user.address)
+    {
+    return NextResponse.json({ error: "Transaction came from wrong wallet" }, { status: 404 });
+}
+
 
     const response = await prisma.$transaction(async tx => {
    const task = await tx.task.create({

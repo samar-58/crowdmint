@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UploadImage from "./UploadImage";
 import { useCreateTask } from "@/hooks/useTask";
 import { useRouter } from "next/navigation";
 import { useWallet,useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { PARENT_WALLET_ADDRESS } from "@/utils/clientConstants";
 
 type LoadingState = 'idle' | 'sending' | 'confirming' | 'creating';
   
@@ -24,6 +25,7 @@ export default function Upload() {
   const [signature, setSignature] = useState("");
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const createTask = useCreateTask();
+
 
   const handleCreateTask = async () => {
     if (!title.trim()) {
@@ -75,7 +77,7 @@ const handleSend = async () => {
     const tx = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: publicKey,
-        toPubkey: new PublicKey("HDGdwAwR2kiuH3F9ByKFeijqtW8DWvWGrrxyzUJjf4uy"),
+        toPubkey: new PublicKey(PARENT_WALLET_ADDRESS),
         lamports: Number(amount) * 10 ** 9,
       })
     )

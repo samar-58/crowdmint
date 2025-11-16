@@ -27,7 +27,6 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { refetch, error } = usePresignedUrl();
 
-  // Notify parent component when uploaded images change
   useEffect(() => {
     if (onImagesChange) {
       onImagesChange(uploadedImages);
@@ -48,7 +47,6 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
       return;
     }
     
-    // Create preview URLs for selected files
     const newPendingImages: PendingImage[] = files.map(file => ({
       file,
       previewUrl: URL.createObjectURL(file)
@@ -56,7 +54,6 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
     
     setPendingImages(prev => [...prev, ...newPendingImages]);
     
-    // Clear the input
     if (fileRef.current) {
       fileRef.current.value = '';
     }
@@ -66,7 +63,6 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
     setPendingImages(prev => {
       const newPending = [...prev];
       const removed = newPending.splice(index, 1)[0];
-      // Clean up the object URL
       URL.revokeObjectURL(removed.previewUrl);
       return newPending;
     });
@@ -132,10 +128,8 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
         console.log("File uploaded successfully!", data.fields);
       }
       
-      // Clean up preview URLs
       pendingImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
       
-      // Move pending to uploaded
       setUploadedImages(prev => [...prev, ...uploadedKeys]);
       setPendingImages([]);
       

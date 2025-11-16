@@ -1,19 +1,22 @@
 "use client"
 import { useRole } from "@/contexts/RoleContext";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
   const { selectedRole, setSelectedRole } = useRole();
   const router = useRouter();
 
+  useEffect(() => {
+    if (selectedRole === 'user') {
+      router.push('/user');
+    } else if (selectedRole === 'worker') {
+      router.push('/worker');
+    }
+  }, [selectedRole, router]);
 
-  if (selectedRole === 'user') {
-    router.push('/user');
-    return null;
-  }
-  
-  if (selectedRole === 'worker') {
-    router.push('/worker');
+  // Don't show content if redirecting
+  if (selectedRole !== 'unsigned') {
     return null;
   }
 

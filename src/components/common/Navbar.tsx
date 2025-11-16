@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletConnectButton, WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
 
 export default function Navbar({role}: {role: UserRole | "unsigned"}): React.ReactNode{
@@ -22,15 +22,20 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
         setAuthenticating 
     } = useAuthStore();
     
-    const signIn = async () => {
+    const signIn = useCallback(async () => {
         if (role === "unsigned" || !connected || !signMessage || isAuthenticating) {
+            return;
+        }
+
+        const existingToken = getToken(role);
+        if (existingToken) {
+            console.log(`${role} already has a valid token, skipping sign-in`);
             return;
         }
 
         setAuthenticating(true);
         
         try {
-            
             const signature = await signMessage(new TextEncoder().encode("Sign in to Crowdmint"));
             
             const response = await axios.post(`/api/${role}/signin`, {
@@ -41,7 +46,7 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
             if (response.status === 200 && response.data.token) {
                 setToken(role, response.data.token);
                 console.log(`${role} signed in successfully`);
-                router.refresh();
+                router.push(`/${role}`);
             }
         } catch (error) {
             console.error(`Error signing in as ${role}:`, error);
@@ -50,19 +55,32 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
         } finally {
             setAuthenticating(false);
         }
-    };
+    }, [role, connected, signMessage, isAuthenticating, getToken, setToken, publicKey, setAuthenticating, router]);
     
     useEffect(() => {
-        if (connected && !hasAttemptedAuth.current && role !== "unsigned") {
-            hasAttemptedAuth.current = true;
-            signIn();
+        if (connected && role !== "unsigned") {
+            const existingToken = getToken(role);
+
+            if (!existingToken && !hasAttemptedAuth.current) {
+                hasAttemptedAuth.current = true;
+                signIn();
+            }
         }
         
         if (!connected) {
             hasAttemptedAuth.current = false;
             setAuthenticating(false);
+            
+            if (role !== "unsigned") {
+                const token = getToken(role);
+                if (token) {
+                    removeToken(role);
+                    console.log(`${role} token removed due to wallet disconnect`);
+                    router.push('/');
+                }
+            }
         }
-    }, [connected, role]);
+    }, [connected, role, getToken, removeToken, router, signIn]);
     return (
         <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -74,7 +92,7 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                         >
                             Crowdmint
                         </Link>
-                        {role === "user" && (
+                        {role === "user" && connected && (
                             <>
                         <div className="hidden md:flex space-x-1">
                             <Link
@@ -88,6 +106,24 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                                 className="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
                             >
                                 View Tasks
+                            </Link>
+                        </div>
+                        </>
+                        )}
+                        {role === "worker" && connected && (
+                            <>
+                        <div className="hidden md:flex space-x-1">
+                            <Link
+                                href="/worker"
+                                className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
+                            >
+                                Home
+                            </Link>
+                            <Link
+                                href="/worker/task"
+                                className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
+                            >
+                                Next Task
                             </Link>
                         </div>
                         </>
@@ -108,11 +144,11 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
 
             {/* Mobile Navigation */}
             <div className="md:hidden border-t border-gray-200 bg-white">
-                {role === "user" && (
+                {role === "user" && connected && (
                 <>
                 <div className="px-4 py-3 space-y-1">
                     <Link
-                        href="/"
+                        href="/user/tasks/create"
                         className="block text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
                     >
                         Create Task
@@ -122,6 +158,24 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                         className="block text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
                     >
                         View Tasks
+                    </Link>
+                </div>
+                </>
+                )}
+                {role === "worker" && connected && (
+                <>
+                <div className="px-4 py-3 space-y-1">
+                    <Link
+                        href="/worker"
+                        className="block text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
+                    >
+                        Home
+                    </Link>
+                    <Link
+                        href="/worker/task"
+                        className="block text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
+                    >
+                        Next Task
                     </Link>
                 </div>
                 </>

@@ -11,13 +11,18 @@ import { useMemo } from "react";
 import '@solana/wallet-adapter-react-ui/styles.css';
 import Navbar from "@/components/common/Navbar";
 import { RoleProvider, useRole } from "@/contexts/RoleContext";
+import { useNextTask } from "@/hooks/useTask";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
     const { selectedRole } = useRole();
     
+    const { data } = useNextTask(selectedRole === 'worker');
+
+    const pendingBalance = data?.pendingBalance ?? 0;
+    const lockedBalance = data?.lockedBalance ?? 0;
     return (
         <>
-            <Navbar role={selectedRole} />
+            <Navbar role={selectedRole} pendingBalance={pendingBalance} lockedBalance={lockedBalance} />
             {children}
         </>
     );

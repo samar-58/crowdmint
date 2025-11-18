@@ -78,7 +78,9 @@ export default function NextTask() {
         error.message.toLowerCase().includes('no more tasks')
     );
 
-    if (isNoTasksError || !data?.task) {
+    const noTasksAvailable = isNoTasksError || (data && data.task === null);
+
+    if (noTasksAvailable) {
         return (
             <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-blue-50">
                 <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md w-full text-center">
@@ -126,6 +128,10 @@ export default function NextTask() {
         );
     }
 
+    if (!data?.task) {
+        return null;
+    }
+
     const task = data.task;
 
     return (
@@ -144,7 +150,7 @@ export default function NextTask() {
                         <div className="bg-green-50 px-6 py-3 rounded-xl border-2 border-green-200">
                             <p className="text-sm text-green-700 font-medium mb-1">Reward</p>
                             <p className="text-2xl font-bold text-green-600">
-                                {formatAmount(task.amount)} SOL
+                                {formatAmount(task.amount / task.maximumSubmissions)} SOL
                             </p>
                         </div>
                     </div>

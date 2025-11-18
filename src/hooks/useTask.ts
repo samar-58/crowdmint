@@ -77,8 +77,12 @@ interface NextTaskResponse {
     id: string;
     title: string;
     amount: number;
+    maximumSubmissions: number;
     options: NextTaskOption[];
-  };
+  } | null;
+  pendingBalance: number;
+  lockedBalance: number;
+  message?: string;
 }
 
 interface SubmissionPayload {
@@ -93,16 +97,19 @@ interface SubmissionResponse {
     title: string;
     amount: number;
     options: NextTaskOption[];
-  };
+  } | null;
+  pendingBalance: number;
+  lockedBalance: number;
 }
 
-export const useNextTask = () => {
+export const useNextTask = (enabled: boolean = true) => {
   return useQuery<NextTaskResponse, Error>({
     queryKey: ['nextTask'],
     queryFn: async () => {
       const response = await api.get<NextTaskResponse>('/api/worker/next-task');
       return response.data;
     },
+    enabled,
   });
 };
 
@@ -115,12 +122,19 @@ export const useSubmitTask = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      // Update the next task query with the new task data
       if (data.nextTask) {
-        queryClient.setQueryData(['nextTask'], { task: data.nextTask });
+        queryClient.setQueryData(['nextTask'], { 
+          task: data.nextTask,
+          pendingBalance: data.pendingBalance,
+          lockedBalance: data.lockedBalance
+        });
       } else {
-        // No more tasks, set query data to undefined to show "All Done" state
-        queryClient.setQueryData(['nextTask'], undefined);
+        queryClient.setQueryData(['nextTask'], { 
+          task: null,
+          pendingBalance: data.pendingBalance,
+          lockedBalance: data.lockedBalance,
+          message: 'No more tasks available'
+        });
       }
     },
   });

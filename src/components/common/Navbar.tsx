@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
 
-export default function Navbar({role}: {role: UserRole | "unsigned"}): React.ReactNode{
+export default function Navbar({role, pendingBalance, lockedBalance}: {role: UserRole | "unsigned", pendingBalance: number, lockedBalance: number}): React.ReactNode{
     const { publicKey, signMessage ,connected} = useWallet();
     const router = useRouter();
     const hasAttemptedAuth = useRef(false);
@@ -129,7 +129,16 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                         </>
                         )}
                     </div>
-
+                    <div className="flex items-center space-x-5">
+                    {role === "worker" && connected && (
+                        <>
+                            <p className="text-gray-700 text-sm font-medium">Pending {pendingBalance / 1_000_000_000} SOL</p>
+                            <p className="text-gray-700 text-sm font-medium">Locked {lockedBalance / 1_000_000_000} SOL</p>
+                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
+                                Payout
+                            </button>
+                        </>
+                    )}
                     {/* Connect Wallet Button */}
                     {/* <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
                         Connect Wallet
@@ -139,6 +148,7 @@ export default function Navbar({role}: {role: UserRole | "unsigned"}): React.Rea
                     ) : (
                         <WalletMultiButton />
                     )}
+                    </div>
                 </div>
             </div>
 

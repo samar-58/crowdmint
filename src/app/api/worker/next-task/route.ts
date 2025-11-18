@@ -24,9 +24,14 @@ const workerId = req.headers.get("x-worker-id");
     }
 
     if(!task){
-        return NextResponse.json({ error: "No task found" }, { status: 411 });
+        return NextResponse.json({ message: "No task found",    pendingBalance: worker.pendingBalance,
+            lockedBalance: worker.lockedBalance , task: null }, { status: 200 });
     }
 
-return NextResponse.json({ task }, { status: 200 });
+return NextResponse.json({ 
+    task, 
+    pendingBalance: worker.pendingBalance,
+    lockedBalance: worker.lockedBalance 
+}, { status: 200 });
 
 }

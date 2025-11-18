@@ -3,7 +3,6 @@ import { LAMPORTS_PER_SOL, prisma } from "@/utils/constants";
 import { getNextTask } from "@/utils/getNextTask";
 import { NextRequest, NextResponse } from "next/server";
 
-const TotalWorkers = 10;
 
 export async function POST(req:NextRequest){
     const body = await req.json();
@@ -23,9 +22,9 @@ if(!task){
 if(task?.id !== parsedData.data.taskId){
     return NextResponse.json({ error: "Invalid Task Id" }, { status: 404 });
 }
-let amount = task.amount  / TotalWorkers;
+let amount = task.amount  / task.maximumSubmissions;
 
-await prisma.$transaction(async tx => {
+const updatedWorker = await prisma.$transaction(async tx => {
     let submission = await tx.submission.create({
         data:{
             workerId:workerId as string,
@@ -35,7 +34,7 @@ await prisma.$transaction(async tx => {
         }
     })
 
-    await tx.worker.update({
+    const worker = await tx.worker.update({
         where:{
             id:workerId as string,
         },
@@ -44,13 +43,21 @@ await prisma.$transaction(async tx => {
                 increment: amount,
             },
         },
+        select:{
+            pendingBalance: true,
+            lockedBalance: true,
+        }
     })
+
+    return worker;
 })
 
 
 const nextTask = await getNextTask(workerId as string);
 return NextResponse.json({ 
     message: nextTask ? "Submission created successfully" : "Submission created successfully - All tasks completed!", 
-    nextTask: nextTask || null
+    nextTask: nextTask || null,
+    pendingBalance: updatedWorker.pendingBalance,
+    lockedBalance: updatedWorker.lockedBalance
 }, { status: 200 });
 }

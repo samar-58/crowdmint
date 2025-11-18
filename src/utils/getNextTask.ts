@@ -15,6 +15,7 @@ export async function getNextTask(workerId:string){
         options:true,
         id:true,
         amount:true,
+        maximumSubmissions:true,
     }
 })
 return task;

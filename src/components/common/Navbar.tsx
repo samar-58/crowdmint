@@ -56,7 +56,7 @@ export default function Navbar({role, pendingBalance, lockedBalance}: {role: Use
             setAuthenticating(false);
         }
     }, [role, connected, signMessage, isAuthenticating, getToken, setToken, publicKey, setAuthenticating, router]);
-    
+      
     useEffect(() => {
         if (connected && role !== "unsigned") {
             const existingToken = getToken(role);
@@ -81,6 +81,23 @@ export default function Navbar({role, pendingBalance, lockedBalance}: {role: Use
             }
         }
     }, [connected, role, getToken, removeToken, router, signIn]);
+
+
+const handlePayout = async () => {
+    try {
+        const response = await axios.post("/api/worker/payouts",{
+        },{
+            headers: {
+                Authorization: `Bearer ${getToken("worker")}`
+            }
+        })
+        console.log(response.data);
+    } catch (error) {
+        console.error("Error paying out:", error);
+        alert("Error paying out. Please try again.");
+    }
+}
+
     return (
         <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,7 +151,7 @@ export default function Navbar({role, pendingBalance, lockedBalance}: {role: Use
                         <>
                             <p className="text-gray-700 text-sm font-medium">Pending {pendingBalance / 1_000_000_000} SOL</p>
                             <p className="text-gray-700 text-sm font-medium">Locked {lockedBalance / 1_000_000_000} SOL</p>
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
+                            <button onClick={handlePayout} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
                                 Payout
                             </button>
                         </>

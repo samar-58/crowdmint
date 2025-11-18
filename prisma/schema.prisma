@@ -32,18 +32,18 @@ model Worker{
   payouts Payouts[]
 }
 
-
 model Task{
   id        String       @id @default(cuid())
   title     String
   type      TaskType
-  signature String
+  signature String       @unique
   amount    Int          //in lamports 10^9
   options   Option[]
   done      Boolean      @default(false)
   userId    String
   user      User       @relation(fields: [userId], references: [id])
   submissions Submission[]
+  maximumSubmissions Int          @default(100)
 }
 
 model Option{
@@ -71,7 +71,7 @@ model Payouts{
   workerId  String
   worker    Worker     @relation(fields: [workerId], references: [id])
   amount    Int          //in lamports 10^9
-  signature String
+  signature String       @unique
   status PayoutStatus
 }
 
@@ -80,4 +80,5 @@ enum PayoutStatus{
   SUCCESS
   FAILED
 }
+
 

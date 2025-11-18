@@ -17,6 +17,5 @@ export async function GET(req:NextRequest){
             lockedBalance:true,
         }
     });
-   console.log(balance,"balance");
     return NextResponse.json({ balance }, { status: 200 });
 }

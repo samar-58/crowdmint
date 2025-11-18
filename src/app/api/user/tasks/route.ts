@@ -24,7 +24,6 @@ export async function POST(req:NextRequest){
             id:userId as string,
         }
     })
-    console.log(user?.address,"user");
     if(!user){
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -32,7 +31,6 @@ export async function POST(req:NextRequest){
 const transaction = await connection.getTransaction(parsedData.data.signature,{
     maxSupportedTransactionVersion:1,
 })
-console.log(transaction,"transaction");
 
 if((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== parsedData.data.amount * 10**9){
     return NextResponse.json({ error: "Transaction signature/amount is invalid" }, { status: 404 });

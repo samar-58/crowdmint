@@ -40,6 +40,5 @@ const {url, fields} = await createPresignedPost(s3Client,{
       ],
     Expires: 60 * 60 * 24
 })
-console.log(url,fields,"url,fields");
     return NextResponse.json({ url, fields });
 }

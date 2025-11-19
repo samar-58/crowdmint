@@ -33,15 +33,18 @@ const transaction = await connection.getTransaction(parsedData.data.signature,{
 })
 
 if((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== parsedData.data.amount * 10**9){
-    return NextResponse.json({ error: "Transaction signature/amount is invalid" }, { status: 404 });
+    console.log("Transaction signature/amount is invalid",(transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0),parsedData.data.amount * 10**9)
+    return NextResponse.json({ error: "Transaction signature/amount is invalid" }, { status: 411 });
 }
 if(transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS)
     {
-    return NextResponse.json({ error: "Transaction sent to wrong wallet" }, { status: 404 });
+    console.log("Transaction sent to wrong wallet",transaction?.transaction.message.getAccountKeys().get(1)?.toString(),PARENT_WALLET_ADDRESS)
+    return NextResponse.json({ error: "Transaction sent to wrong wallet" }, { status: 411 });
 }
 if(transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== user.address)
     {
-    return NextResponse.json({ error: "Transaction came from wrong wallet" }, { status: 404 });
+    console.log("Transaction came from wrong wallet",transaction?.transaction.message.getAccountKeys().get(0)?.toString(),user.address)
+    return NextResponse.json({ error: "Transaction came from wrong wallet" }, { status: 411 });
 }
 
 

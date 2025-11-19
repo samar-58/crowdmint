@@ -1,74 +1,69 @@
-import { PARENT_WALLET_ADDRESS, PARENT_WALLET_SECRET_KEY, prisma } from "@/utils/constants";
-import { clusterApiUrl, Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { NextRequest, NextResponse } from "next/server";
-import bs58 from "bs58";
-export async function POST(req:NextRequest){
-let workerId = req.headers.get("x-worker-id");
+import { prisma } from "@/utils/constants";
 
-const connection = new Connection(clusterApiUrl("devnet"));
+export async function POST(req: NextRequest) {
+  const workerId = req.headers.get("x-worker-id");
+  if (!workerId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-if(!workerId){
-    return NextResponse.json({
-    error:"Unauthorized"
-    },{status:401})
+  const worker = await prisma.worker.findFirst({ where: { id: workerId }});
+  if (!worker) return NextResponse.json({ error: "Worker not found" }, { status: 404 });
+
+  const sqs = new SQSClient({ region: process.env.AWS_REGION as string });
+
+if(!process.env.AWS_SQS_URL){
+  console.log("SQS URL not found",process.env.AWS_SQS_URL)
+  return NextResponse.json({ error: "SQS URL not found" }, { status: 500 });
+}
+if(worker.pendingBalance <= 0){
+  console.log("No pending balance",worker.pendingBalance)
+  return NextResponse.json({ error: "No pending balance" }, { status: 400 });
 }
 
-console.log(workerId)
+try {
+  const amount = worker.pendingBalance;
+  const payout = await prisma.$transaction(async (tx) => {
 
-const worker = await prisma.worker.findFirst({
-where:{
-    id:workerId
+    const updatedWorker = await tx.worker.update({
+      where: { id: workerId },
+      data: {
+        pendingBalance: { decrement: amount },
+        lockedBalance: { increment: amount },
+      },
+    });
+
+    const newPayout = await tx.payouts.create({
+      data: {
+        workerId,
+        amount,
+        status: "PROCESSING",
+        signature: "",
+      },
+    });
+    return newPayout;
+  });
+
+  try {
+    await sqs.send(new SendMessageCommand({
+      QueueUrl: process.env.AWS_SQS_URL,
+      MessageBody: JSON.stringify({
+        workerId: workerId,
+        workerAddress: worker.address,
+        pendingBalance: payout.amount
+      })
+    }));
+  } catch (sqsError) {
+    console.error("SQS send failed after successful transaction:", sqsError);
+  }
+  return NextResponse.json({
+    message: "Payout queued",
+    amount: payout.amount
+  });
+} catch (error) {
+  console.error("Payout transaction failed:", error);
+  return NextResponse.json(
+    { error: "Failed to process payout" },
+    { status: 500 }
+  );
 }
-})
-
-
-if(!worker){
-    return NextResponse.json({error:"Worker not found"},{status:404})
-}
-
-const tx = new Transaction().add(
-    SystemProgram.transfer({
-      fromPubkey: new PublicKey(PARENT_WALLET_ADDRESS),
-      toPubkey: new PublicKey(worker.address),
-      lamports: Number(worker.pendingBalance),
-    })
-  )
-
-const secretKeyBytes = bs58.decode(PARENT_WALLET_SECRET_KEY);
-
-console.log(secretKeyBytes)
-const keypair = Keypair.fromSecretKey(secretKeyBytes);
-
-  const signature = await sendAndConfirmTransaction(connection,tx,[keypair])
-
- await prisma.$transaction(async tx => {
- await tx.worker.update({
-    where:{
-        id:workerId
-    },
-    data:{
-     pendingBalance:{
-        decrement:worker?.pendingBalance
-     },
-     lockedBalance:{
-        increment:worker?.pendingBalance
-     }
-    }
-})
-await tx.payouts.create({
-    data:{
-        workerId:workerId,
-        amount:worker.pendingBalance,
-        signature:signature,
-        status:"PROCESSING"
-    }   
-})
-})
-
-//all set to send txn to solscan
-return NextResponse.json({
-    message:"Payout is processing",
-    amount:worker.pendingBalance
-},{status:200})
-
 }

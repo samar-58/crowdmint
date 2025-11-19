@@ -22,7 +22,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     const lockedBalance = data?.lockedBalance ?? 0;
     return (
         <>
-            <Navbar role={selectedRole} pendingBalance={pendingBalance} lockedBalance={lockedBalance} />
+            {selectedRole !== "unsigned" && (
+                <Navbar role={selectedRole} pendingBalance={pendingBalance} lockedBalance={lockedBalance} />
+            )}
             {children}
         </>
     );

@@ -2,13 +2,23 @@
 
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletConnectButton, WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
 
-export default function Navbar({role, pendingBalance, lockedBalance}: {role: UserRole | "unsigned", pendingBalance: number, lockedBalance: number}): React.ReactNode{
+export default function Navbar({
+    role, 
+    pendingBalance, 
+    lockedBalance,
+    hideWallet = false
+}: {
+    role: UserRole | "unsigned", 
+    pendingBalance: number, 
+    lockedBalance: number,
+    hideWallet?: boolean
+}): React.ReactNode {
     const { publicKey, signMessage ,connected} = useWallet();
     const router = useRouter();
     const hasAttemptedAuth = useRef(false);
@@ -83,129 +93,150 @@ export default function Navbar({role, pendingBalance, lockedBalance}: {role: Use
     }, [connected, role, getToken, removeToken, router, signIn]);
 
 
-const handlePayout = async () => {
-    try {
-        const response = await axios.post("/api/worker/payouts",{
-        },{
-            headers: {
-                Authorization: `Bearer ${getToken("worker")}`
-            }
-        })
-        console.log(response.data);
-    } catch (error) {
-        console.error("Error paying out:", error);
-        alert("Error paying out. Please try again.");
+    const handlePayout = async () => {
+        try {
+            const response = await axios.post("/api/worker/payouts",{
+            },{
+                headers: {
+                    Authorization: `Bearer ${getToken("worker")}`
+                }
+            })
+            console.log(response.data);
+        } catch (error) {
+            console.error("Error paying out:", error);
+            alert("Error paying out. Please try again.");
+        }
     }
-}
+
+    // Use dark mode for landing page ("unsigned" role), light mode for app
+    const isDarkMode = role === "unsigned";
+    const bgColor = isDarkMode ? "bg-[#0F1117]/80 backdrop-blur-lg border-white/5" : "bg-white border-gray-200";
+    const textColor = isDarkMode ? "text-white" : "text-gray-700";
+    const borderColor = isDarkMode ? "border-white/5" : "border-gray-200";
 
     return (
-        <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <nav className={`${bgColor} border-b sticky top-0 z-50 transition-all duration-300`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center space-x-8">
                         <Link 
                             href="/" 
-                            className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 transition-all"
+                            className="flex items-center gap-2 group"
                         >
-                            Crowdmint
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-white/5 group-hover:bg-white/10' : 'bg-blue-50 group-hover:bg-blue-100'}`}>
+                                <svg className={`w-5 h-5 ${isDarkMode ? 'text-white' : 'text-blue-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <span className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                Crowdmint
+                            </span>
                         </Link>
+
                         {role === "user" && connected && (
-                            <>
-                        <div className="hidden md:flex space-x-1">
-                            <Link
-                                href="/user/tasks/create"
-                                className="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
-                            >
-                                Create Task
-                            </Link>
-                            <Link
-                                href="/user/tasks"
-                                className="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
-                            >
-                                View Tasks
-                            </Link>
-                        </div>
-                        </>
+                            <div className="hidden md:flex space-x-1">
+                                <Link
+                                    href="/user/tasks/create"
+                                    className={`${textColor} hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                                >
+                                    Create Task
+                                </Link>
+                                <Link
+                                    href="/user/tasks"
+                                    className={`${textColor} hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                                >
+                                    View Tasks
+                                </Link>
+                            </div>
                         )}
                         {role === "worker" && connected && (
-                            <>
-                        <div className="hidden md:flex space-x-1">
-                            <Link
-                                href="/worker"
-                                className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
-                            >
-                                Home
-                            </Link>
-                            <Link
-                                href="/worker/task"
-                                className="text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
-                            >
-                                Next Task
-                            </Link>
-                        </div>
-                        </>
+                            <div className="hidden md:flex space-x-1">
+                                <Link
+                                    href="/worker"
+                                    className={`${textColor} hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                                >
+                                    Home
+                                </Link>
+                                <Link
+                                    href="/worker/task"
+                                    className={`${textColor} hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                                >
+                                    Next Task
+                                </Link>
+                            </div>
                         )}
                     </div>
+                    
                     <div className="flex items-center space-x-5">
-                    {role === "worker" && connected && (
-                        <>
-                            <p className="text-gray-700 text-sm font-medium">Pending {pendingBalance / 1_000_000_000} SOL</p>
-                            <p className="text-gray-700 text-sm font-medium">Locked {lockedBalance / 1_000_000_000} SOL</p>
-                            <button onClick={handlePayout} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
-                                Payout
-                            </button>
-                        </>
-                    )}
-                    {/* Connect Wallet Button */}
-                    {/* <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
-                        Connect Wallet
-                    </button> */}
-                    {connected ? (
-                        <WalletDisconnectButton />
-                    ) : (
-                        <WalletMultiButton />
-                    )}
+                        {role === "worker" && connected && (
+                            <div className="flex items-center gap-4 bg-gray-50 px-4 py-1.5 rounded-full border border-gray-200">
+                                <div className="flex flex-col items-end">
+                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Pending</p>
+                                    <p className="text-sm font-bold text-gray-900">{pendingBalance / 1_000_000_000} SOL</p>
+                                </div>
+                                <div className="h-8 w-px bg-gray-200"></div>
+                                <button 
+                                    onClick={handlePayout} 
+                                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                                >
+                                    Payout
+                                </button>
+                            </div>
+                        )}
+                        
+                        {!hideWallet && (
+                            connected ? (
+                                <WalletDisconnectButton />
+                            ) : (
+                                <WalletMultiButton />
+                            )
+                        )}
+                        
+                        {role === "unsigned" && (
+                             <button 
+                                onClick={() => document.getElementById('roles-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                className="px-5 py-2 rounded-full bg-white text-black font-medium hover:bg-gray-100 transition-colors text-sm"
+                             >
+                                Launch App
+                             </button>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* Mobile Navigation */}
-            <div className="md:hidden border-t border-gray-200 bg-white">
+            <div className={`md:hidden border-t ${borderColor} ${isDarkMode ? 'bg-[#0F1117]' : 'bg-white'}`}>
                 {role === "user" && connected && (
-                <>
-                <div className="px-4 py-3 space-y-1">
-                    <Link
-                        href="/user/tasks/create"
-                        className="block text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
-                    >
-                        Create Task
-                    </Link>
-                    <Link
-                        href="/user/tasks"
-                        className="block text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium"
-                    >
-                        View Tasks
-                    </Link>
-                </div>
-                </>
+                    <div className="px-4 py-3 space-y-1">
+                        <Link
+                            href="/user/tasks/create"
+                            className={`block ${textColor} hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                        >
+                            Create Task
+                        </Link>
+                        <Link
+                            href="/user/tasks"
+                            className={`block ${textColor} hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                        >
+                            View Tasks
+                        </Link>
+                    </div>
                 )}
                 {role === "worker" && connected && (
-                <>
-                <div className="px-4 py-3 space-y-1">
-                    <Link
-                        href="/worker"
-                        className="block text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
-                    >
-                        Home
-                    </Link>
-                    <Link
-                        href="/worker/task"
-                        className="block text-gray-700 hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium"
-                    >
-                        Next Task
-                    </Link>
-                </div>
-                </>
+                    <div className="px-4 py-3 space-y-1">
+                        <Link
+                            href="/worker"
+                            className={`block ${textColor} hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                        >
+                            Home
+                        </Link>
+                        <Link
+                            href="/worker/task"
+                            className={`block ${textColor} hover:text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-lg transition-all font-medium`}
+                        >
+                            Next Task
+                        </Link>
+                    </div>
                 )}
             </div>
         </nav>

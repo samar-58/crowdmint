@@ -1,10 +1,12 @@
 "use client"
-import Navbar from "@/components/common/Navbar";
+
 import { useRole } from "@/contexts/RoleContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import Scene from "@/components/landing/Scene";
+import { motion, Variants } from "framer-motion";
 
 export default function Home() {
   const { selectedRole, setSelectedRole } = useRole();
@@ -27,36 +29,69 @@ export default function Home() {
     return null;
   }
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-zinc-800 selection:text-white">
-      {/* Navigation */}
-      <Navbar role="unsigned" pendingBalance={0} lockedBalance={0} hideWallet={true} />
+    <div className="relative min-h-screen text-white overflow-x-hidden font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+      <Scene />
+
+
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-medium mb-8">
+      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+        <motion.div
+          className="max-w-6xl mx-auto text-center"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-indigo-300 text-sm font-medium mb-8 shadow-[0_0_15px_rgba(79,70,229,0.3)]">
             <span className="relative flex h-2 w-2">
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
             </span>
             Live on Solana Devnet
-          </div>
+          </motion.div>
 
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-white">
-            Decentralized Data Labeling
-          </h1>
+          <motion.h1
+            variants={itemVariants}
+            className="text-7xl md:text-9xl font-black mb-8 tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/10 drop-shadow-2xl"
+            style={{ lineHeight: 0.9 }}
+          >
+            CROWD<span className="text-indigo-500">MINT</span>
+          </motion.h1>
 
-          <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <motion.p variants={itemVariants} className="text-xl md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
             Crowdmint connects AI creators with a distributed workforce.
-            Label data to earn SOL, or upload tasks to train your models faster.
-          </p>
+            <span className="text-white font-medium"> Label data to earn SOL</span>, or upload tasks to train your models faster.
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Button
               onClick={scrollToRoles}
               size="lg"
-              variant="primary"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto bg-white text-black hover:bg-zinc-200 border-0 text-lg px-10 py-8 rounded-full font-bold transition-transform hover:scale-105"
             >
               Start Earning
             </Button>
@@ -64,24 +99,45 @@ export default function Home() {
               onClick={scrollToRoles}
               size="lg"
               variant="outline"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 text-white text-lg px-10 py-8 rounded-full transition-transform hover:scale-105"
             >
               Create Task
             </Button>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center p-1">
+            <motion.div
+              animate={{ y: [0, 12, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="w-1 h-2 bg-white rounded-full"
+            />
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 border-y border-zinc-900 bg-zinc-900/20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-8">
+      <section className="relative z-10 py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="grid md:grid-cols-3 gap-8"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
             {[
               {
                 title: "Instant Payouts",
                 desc: "Get paid in SOL immediately after task verification. No minimum thresholds.",
                 icon: (
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 )
@@ -90,7 +146,7 @@ export default function Home() {
                 title: "Quality First",
                 desc: "Consensus-based validation ensures high-quality data for your AI models.",
                 icon: (
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 )
@@ -99,84 +155,98 @@ export default function Home() {
                 title: "Web3 Native",
                 desc: "Fully decentralized workflow. Connect your wallet and start immediately.",
                 icon: (
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 )
               }
             ].map((feature, i) => (
-              <Card key={i} hoverEffect className="bg-zinc-900/50 border-zinc-800">
-                <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-4">
+              <div key={i} className="group p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 hover:-translate-y-2">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{feature.title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{feature.desc}</p>
-              </Card>
+                <h3 className="text-2xl font-bold mb-4 text-white">{feature.title}</h3>
+                <p className="text-zinc-400 leading-relaxed">{feature.desc}</p>
+              </div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Role Selection Section */}
-      <section id="roles-section" className="py-32 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4 text-white">Choose Your Path</h2>
-            <p className="text-zinc-400">Select how you want to interact with the protocol</p>
-          </div>
+      <section id="roles-section" className="relative z-10 py-32 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            className="text-center mb-20"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Choose Your Path</h2>
+            <p className="text-xl text-zinc-400">Select how you want to interact with the protocol</p>
+          </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Creator Card */}
-            <button
+            <motion.button
               onClick={() => setSelectedRole('user')}
-              className="group text-left"
+              className="group text-left relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 hover:bg-zinc-900/40 transition-all duration-300"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card hoverEffect className="h-full bg-zinc-900/30 border-zinc-800 group-hover:border-zinc-700 transition-colors">
-                <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6 group-hover:bg-white group-hover:text-black transition-colors duration-300">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-10">
+                <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 group-hover:bg-white group-hover:text-black transition-all duration-300">
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
 
-                <h3 className="text-xl font-bold mb-2 text-white">I'm a Creator</h3>
-                <p className="text-zinc-400 mb-6 text-sm leading-relaxed">
+                <h3 className="text-2xl font-bold mb-4 text-white">I'm a Creator</h3>
+                <p className="text-zinc-400 mb-8 text-lg leading-relaxed">
                   Upload data tasks and get them labeled by our distributed workforce. Fast, accurate, and cost-effective.
                 </p>
 
-                <div className="flex items-center text-white text-sm font-medium group-hover:translate-x-1 transition-transform">
+                <div className="flex items-center text-white text-sm font-medium group-hover:translate-x-2 transition-transform">
                   Get Started <span className="ml-2">→</span>
                 </div>
-              </Card>
-            </button>
+              </div>
+            </motion.button>
 
             {/* Worker Card */}
-            <button
+            <motion.button
               onClick={() => setSelectedRole('worker')}
-              className="group text-left"
+              className="group text-left relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 hover:bg-zinc-900/40 transition-all duration-300"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card hoverEffect className="h-full bg-zinc-900/30 border-zinc-800 group-hover:border-zinc-700 transition-colors">
-                <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6 group-hover:bg-white group-hover:text-black transition-colors duration-300">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-10">
+                <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-8 group-hover:bg-white group-hover:text-black transition-all duration-300">
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
 
-                <h3 className="text-xl font-bold mb-2 text-white">I'm a Worker</h3>
-                <p className="text-zinc-400 mb-6 text-sm leading-relaxed">
+                <h3 className="text-2xl font-bold mb-4 text-white">I'm a Worker</h3>
+                <p className="text-zinc-400 mb-8 text-lg leading-relaxed">
                   Earn crypto by completing simple data labeling tasks. Flexible work, instant payouts.
                 </p>
 
-                <div className="flex items-center text-white text-sm font-medium group-hover:translate-x-1 transition-transform">
+                <div className="flex items-center text-white text-sm font-medium group-hover:translate-x-2 transition-transform">
                   Start Earning <span className="ml-2">→</span>
                 </div>
-              </Card>
-            </button>
+              </div>
+            </motion.button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 py-12 bg-background">
+      <footer className="relative z-10 border-t border-white/10 py-12 bg-black/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-zinc-500 text-sm">
           <p>&copy; 2024 Crowdmint. All rights reserved.</p>
           <div className="flex gap-8 mt-4 md:mt-0">

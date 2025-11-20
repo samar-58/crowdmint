@@ -71,7 +71,7 @@ model Payouts{
   workerId  String
   worker    Worker     @relation(fields: [workerId], references: [id])
   amount    Int          //in lamports 10^9
-  signature String       @unique
+  signature String?      @unique
   status PayoutStatus
 }
 
@@ -79,6 +79,7 @@ enum PayoutStatus{
   PROCESSING
   SUCCESS
   FAILED
+  PENDING
 }
 
 

@@ -8,20 +8,20 @@ interface AuthState {
   userToken: string | null;
   workerToken: string | null;
   isAuthenticating: boolean;
-  
+
   getToken: (role: UserRole) => string | null;
-  
+
   setUserToken: (token: string) => void;
   setWorkerToken: (token: string) => void;
   setToken: (role: UserRole, token: string) => void;
-  
+
   removeUserToken: () => void;
   removeWorkerToken: () => void;
   removeToken: (role: UserRole) => void;
   clearAllTokens: () => void;
-  
+
   setAuthenticating: (isAuthenticating: boolean) => void;
-  
+
   verifyToken: (role: UserRole) => Promise<boolean>;
 }
 
@@ -40,9 +40,9 @@ export const useAuthStore = create<AuthState>()(
 
 
       setUserToken: (token: string) => set({ userToken: token }),
-      
+
       setWorkerToken: (token: string) => set({ workerToken: token }),
-      
+
       setToken: (role: UserRole, token: string) => {
         if (role === 'user') {
           set({ userToken: token });
@@ -53,9 +53,9 @@ export const useAuthStore = create<AuthState>()(
 
 
       removeUserToken: () => set({ userToken: null }),
-      
+
       removeWorkerToken: () => set({ workerToken: null }),
-      
+
       removeToken: (role: UserRole) => {
         if (role === 'user') {
           set({ userToken: null });
@@ -63,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
           set({ workerToken: null });
         }
       },
-      
+
       clearAllTokens: () => set({ userToken: null, workerToken: null }),
 
 
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>()(
             },
           });
           return response.status === 200;
-        } catch (error) {
+        } catch {
           get().removeToken(role);
           return false;
         }
@@ -99,9 +99,9 @@ export const useAuthStore = create<AuthState>()(
 
 export const useAuthHeaders = (role: UserRole) => {
   const token = useAuthStore((state) => state.getToken(role));
-  
+
   if (!token) return {};
-  
+
   return {
     Authorization: `Bearer ${token}`,
   };

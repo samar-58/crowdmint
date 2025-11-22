@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -14,16 +14,19 @@ export default function Navbar({
     role,
     pendingBalance,
     lockedBalance,
-    hideWallet = false
+    hideWallet = false,
+    onRefreshBalance
 }: {
     role: UserRole | "unsigned",
     pendingBalance: number,
     lockedBalance: number,
-    hideWallet?: boolean
+    hideWallet?: boolean,
+    onRefreshBalance?: () => void
 }): React.ReactNode {
     const { publicKey, signMessage, connected } = useWallet();
     const router = useRouter();
     const hasAttemptedAuth = useRef(false);
+    const [isPayingOut, setIsPayingOut] = useState(false);
 
     const {
         getToken,
@@ -96,17 +99,32 @@ export default function Navbar({
 
 
     const handlePayout = async () => {
+        if (isPayingOut || pendingBalance <= 0) return;
+        
+        setIsPayingOut(true);
         try {
-            const response = await axios.post("/api/worker/payouts", {
-            }, {
+            const response = await axios.post("/api/worker/payouts", {}, {
                 headers: {
                     Authorization: `Bearer ${getToken("worker")}`
                 }
-            })
-            console.log(response.data);
+            });
+            
+            console.log("Payout successful:", response.data);
+            
+            if (onRefreshBalance) {
+                 onRefreshBalance();
+            }
+            
+            alert(`Payout request successful! Amount: ${response.data.amount / 1_000_000_000} SOL`);
         } catch (error) {
             console.error("Error paying out:", error);
-            alert("Error paying out. Please try again.");
+            if (axios.isAxiosError(error)) {
+                alert(error.response?.data?.error || "Error paying out. Please try again.");
+            } else {
+                alert("Error paying out. Please try again.");
+            }
+        } finally {
+            setIsPayingOut(false);
         }
     }
 
@@ -129,7 +147,7 @@ export default function Navbar({
                             </span>
                         </Link>
 
-                        {role === "user" && connected && (
+                        {role === "user" && connected && getToken("user") && (
                             <div className="hidden md:flex space-x-1">
                                 <Link href="/user/tasks/create">
                                     <Button variant="ghost" size="sm">Create Task</Button>
@@ -139,7 +157,7 @@ export default function Navbar({
                                 </Link>
                             </div>
                         )}
-                        {role === "worker" && connected && (
+                        {role === "worker" && connected && getToken("worker") && (
                             <div className="hidden md:flex space-x-1">
                                 <Link href="/worker">
                                     <Button variant="ghost" size="sm">Home</Button>
@@ -152,18 +170,34 @@ export default function Navbar({
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        {role === "worker" && connected && (
+                        {role === "worker" && connected && getToken("worker") && (
                             <div className="flex items-center gap-3 bg-zinc-900 px-4 py-1.5 rounded-full border border-zinc-800">
                                 <div className="flex flex-col items-end">
                                     <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">Pending</span>
-                                    <span className="text-sm font-bold text-white">{pendingBalance / 1_000_000_000} SOL</span>
+                                    <span className="text-sm font-bold text-white">{(pendingBalance / 1_000_000_000).toFixed(4)} SOL</span>
+                                </div>
+                                <div className="h-6 w-px bg-zinc-800"></div>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">Locked</span>
+                                    <span className="text-sm font-bold text-amber-400">{(lockedBalance / 1_000_000_000).toFixed(4)} SOL</span>
                                 </div>
                                 <div className="h-6 w-px bg-zinc-800"></div>
                                 <button
                                     onClick={handlePayout}
-                                    className="text-xs font-semibold text-white hover:text-zinc-300 transition-colors"
+                                    disabled={pendingBalance <= 0 || isPayingOut}
+                                    className="text-xs font-semibold text-white hover:text-zinc-300 transition-colors disabled:text-zinc-600 disabled:cursor-not-allowed flex items-center gap-1.5"
                                 >
-                                    Payout
+                                    {isPayingOut ? (
+                                        <>
+                                            <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span>Processing...</span>
+                                        </>
+                                    ) : (
+                                        "Payout"
+                                    )}
                                 </button>
                             </div>
                         )}
@@ -193,7 +227,7 @@ export default function Navbar({
 
             {/* Mobile Navigation */}
             <div className="md:hidden border-t border-zinc-800 bg-background">
-                {role === "user" && connected && (
+                {role === "user" && connected && getToken("user") && (
                     <div className="px-4 py-3 space-y-2">
                         <Link href="/user/tasks/create" className="block">
                             <Button variant="ghost" className="w-full justify-start">Create Task</Button>
@@ -203,7 +237,7 @@ export default function Navbar({
                         </Link>
                     </div>
                 )}
-                {role === "worker" && connected && (
+                {role === "worker" && connected && getToken("worker") && (
                     <div className="px-4 py-3 space-y-2">
                         <Link href="/worker" className="block">
                             <Button variant="ghost" className="w-full justify-start">Home</Button>

@@ -15,16 +15,19 @@ import { useNextTask } from "@/hooks/useTask";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
     const { selectedRole } = useRole();
-    
-    const { data } = useNextTask(selectedRole === 'worker');
+    const { data, refetch } = useNextTask(selectedRole === 'worker');
 
     const pendingBalance = data?.pendingBalance ?? 0;
     const lockedBalance = data?.lockedBalance ?? 0;
+    
     return (
         <>
-            {selectedRole !== "unsigned" && (
-                <Navbar role={selectedRole} pendingBalance={pendingBalance} lockedBalance={lockedBalance} />
-            )}
+            <Navbar 
+                role={selectedRole} 
+                pendingBalance={pendingBalance} 
+                lockedBalance={lockedBalance}
+                onRefreshBalance={refetch}
+            />
             {children}
         </>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { UserRole } from '@/store/authStore';
+import { useAuthStore, type UserRole } from '@/store/authStore';
 
 type Role = UserRole | 'unsigned';
 
@@ -16,14 +16,25 @@ const RoleContext = createContext<RoleContextType | undefined>(undefined);
 export function RoleProvider({ children }: { children: React.ReactNode }) {
     const [selectedRole, setSelectedRoleState] = useState<Role>('unsigned');
     const [isLoading, setIsLoading] = useState(true);
+    const { getToken, removeToken } = useAuthStore();
 
     useEffect(() => {
         const savedRole = localStorage.getItem('userRole');
-        if (savedRole === 'user' || savedRole === 'worker') {
-            setSelectedRoleState(savedRole);
+        
+        if (savedRole === 'user' || savedRole === 'worker') {   
+            const token = getToken(savedRole);
+            
+            if (token) {
+                setSelectedRoleState(savedRole);
+            } else {
+                console.log(`No token found for saved role ${savedRole}, resetting to unsigned`);
+                localStorage.removeItem('userRole');
+                setSelectedRoleState('unsigned');
+            }
         }
+        
         setIsLoading(false);
-    }, []);
+    }, [getToken]);
 
     const setSelectedRole = (role: Role) => {
         setSelectedRoleState(role);

@@ -5,87 +5,88 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider      = "prisma-client"
+  output        = "../generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-enum TaskType{
+enum TaskType {
   TEXT
   IMAGE
 }
-model User{
-  id        String       @id @default(cuid())
-  address   String        @unique
-  tasks     Task[]  
-  createdAt DateTime      @default(now())    
+
+model User {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  tasks     Task[]
+  createdAt DateTime @default(now())
 }
-model Worker{
-  id        String       @id @default(cuid())
-  address   String       @unique
-  submissions Submission[]
+
+model Worker {
+  id             String       @id @default(cuid())
+  address        String       @unique
+  submissions    Submission[]
   pendingBalance Int          @default(0) //in lamports 10^9
-  lockedBalance Int          @default(0) //in lamports 10^9
-  payouts Payouts[]
-  createdAt DateTime      @default(now())   
+  lockedBalance  Int          @default(0) //in lamports 10^9
+  payouts        Payouts[]
+  createdAt      DateTime     @default(now())
 }
 
-model Task{
-  id        String       @id @default(cuid())
-  title     String
-  type      TaskType
-  signature String       @unique
-  amount    Int          //in lamports 10^9
-  options   Option[]
-  done      Boolean      @default(false)
-  userId    String
-  user      User       @relation(fields: [userId], references: [id])
-  submissions Submission[]
+model Task {
+  id                 String       @id @default(cuid())
+  title              String
+  type               TaskType
+  signature          String       @unique
+  amount             Int //in lamports 10^9
+  options            Option[]
+  done               Boolean      @default(false)
+  userId             String
+  user               User         @relation(fields: [userId], references: [id])
+  submissions        Submission[]
   maximumSubmissions Int          @default(100)
-  createdAt DateTime      @default(now()) 
+  createdAt          DateTime     @default(now())
 }
 
-model Option{
-  id        String       @id @default(cuid())
-  imageUrl  String?
-  taskId    String
-  task      Task       @relation(fields: [taskId], references: [id])
+model Option {
+  id          String       @id @default(cuid())
+  imageUrl    String?
+  taskId      String
+  task        Task         @relation(fields: [taskId], references: [id])
   submissions Submission[]
-  createdAt DateTime      @default(now()) 
+  createdAt   DateTime     @default(now())
 }
 
-model Submission{
-  id        String       @id @default(cuid())
+model Submission {
+  id        String   @id @default(cuid())
   workerId  String
-  worker    Worker     @relation(fields: [workerId], references: [id])
+  worker    Worker   @relation(fields: [workerId], references: [id])
   optionId  String
-  option    Option     @relation(fields: [optionId], references: [id])
+  option    Option   @relation(fields: [optionId], references: [id])
   taskId    String?
-  task      Task?       @relation(fields: [taskId], references: [id])
-  amount    Int          //in lamports 10^9
+  task      Task?    @relation(fields: [taskId], references: [id])
+  amount    Int //in lamports 10^9
+  createdAt DateTime @default(now())
+
   @@unique([workerId, taskId])
-  createdAt DateTime      @default(now())  
 }
 
-model Payouts{
+model Payouts {
   id        String       @id @default(cuid())
   workerId  String
-  worker    Worker     @relation(fields: [workerId], references: [id])
-  amount    Int          //in lamports 10^9
+  worker    Worker       @relation(fields: [workerId], references: [id])
+  amount    Int //in lamports 10^9
   signature String?      @unique
-  status PayoutStatus
-  createdAt DateTime      @default(now())
+  status    PayoutStatus
+  createdAt DateTime     @default(now())
 }
 
-enum PayoutStatus{
+enum PayoutStatus {
   PROCESSING
   SUCCESS
   FAILED
   PENDING
 }
-
-

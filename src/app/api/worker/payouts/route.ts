@@ -9,7 +9,12 @@ export async function POST(req: NextRequest) {
   const worker = await prisma.worker.findFirst({ where: { id: workerId } });
   if (!worker) return NextResponse.json({ error: "Worker not found" }, { status: 404 });
 
-  const sqs = new SQSClient({ region: process.env.REGION as string });
+  const sqs = new SQSClient({
+    region: process.env.REGION as string, credentials: {
+      accessKeyId: process.env.ACCESS_KEY!,
+      secretAccessKey: process.env.SECRET_KEY!,
+    }
+  });
 
   if (!process.env.SQS_URL) {
     console.log("SQS URL not found", process.env.SQS_URL)

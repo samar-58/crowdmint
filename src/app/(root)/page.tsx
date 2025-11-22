@@ -18,7 +18,6 @@ export default function Home() {
   const { setVisible } = useWalletModal();
   const { getToken, isAuthenticating } = useAuthStore();
 
-  // Handle role selection
   const handleRoleSelect = (role: 'user' | 'worker') => {
     setSelectedRole(role);
     if (!connected) {
@@ -26,7 +25,6 @@ export default function Home() {
     }
   };
 
-  // Redirect only when authenticated
   useEffect(() => {
     if (!isLoading && selectedRole !== 'unsigned' && connected) {
       const token = getToken(selectedRole as any);
@@ -112,8 +110,8 @@ export default function Home() {
           </motion.h1>
 
           <motion.p variants={itemVariants} className="text-xl md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-            Crowdmint connects AI creators with a distributed workforce.
-            <span className="text-white font-medium"> Label data to earn SOL</span>, or upload tasks to train your models faster.
+            Crowdmint connects creators with a distributed workforce.
+            <span className="text-white font-medium"> Label data to earn SOL</span>, or upload tasks to get authentic results.
           </motion.p>
 
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-6">

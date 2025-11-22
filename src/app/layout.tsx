@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Crowdmint",
   description: "Crowdmint is a solana based dapp for crowdsourcing tasks",
+  icons: {
+    icon: '/logo.svg',
+  },
 };
 
 export default function RootLayout({

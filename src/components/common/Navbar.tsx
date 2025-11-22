@@ -10,6 +10,7 @@ import { useAuthStore, type UserRole } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useRole } from "@/contexts/RoleContext";
+import { Logo } from "@/components/common/Logo";
 
 export default function Navbar({
     role,
@@ -140,14 +141,7 @@ export default function Navbar({
                             href="/"
                             className="flex items-center gap-2"
                         >
-                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                                <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
-                            <span className="text-xl font-bold text-white">
-                                Crowdmint
-                            </span>
+                            <Logo className="h-14 w-auto" />
                         </Link>
 
                         {role === "user" && connected && getToken("user") && (

@@ -21,7 +21,8 @@ enum TaskType{
 model User{
   id        String       @id @default(cuid())
   address   String        @unique
-  tasks     Task[]        
+  tasks     Task[]  
+  createdAt DateTime      @default(now())    
 }
 model Worker{
   id        String       @id @default(cuid())
@@ -30,6 +31,7 @@ model Worker{
   pendingBalance Int          @default(0) //in lamports 10^9
   lockedBalance Int          @default(0) //in lamports 10^9
   payouts Payouts[]
+  createdAt DateTime      @default(now())   
 }
 
 model Task{
@@ -44,6 +46,7 @@ model Task{
   user      User       @relation(fields: [userId], references: [id])
   submissions Submission[]
   maximumSubmissions Int          @default(100)
+  createdAt DateTime      @default(now()) 
 }
 
 model Option{
@@ -52,6 +55,7 @@ model Option{
   taskId    String
   task      Task       @relation(fields: [taskId], references: [id])
   submissions Submission[]
+  createdAt DateTime      @default(now()) 
 }
 
 model Submission{
@@ -64,6 +68,7 @@ model Submission{
   task      Task?       @relation(fields: [taskId], references: [id])
   amount    Int          //in lamports 10^9
   @@unique([workerId, taskId])
+  createdAt DateTime      @default(now())  
 }
 
 model Payouts{
@@ -71,14 +76,16 @@ model Payouts{
   workerId  String
   worker    Worker     @relation(fields: [workerId], references: [id])
   amount    Int          //in lamports 10^9
-  signature String       @unique
+  signature String?      @unique
   status PayoutStatus
+  createdAt DateTime      @default(now())
 }
 
 enum PayoutStatus{
   PROCESSING
   SUCCESS
   FAILED
+  PENDING
 }
 
 

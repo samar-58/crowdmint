@@ -3,12 +3,12 @@ import { jwtVerify } from "jose";
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  
+
   // Skip middleware for signin routes (they don't need auth)
   if (pathname === '/api/user/signin' || pathname === '/api/worker/signin') {
     return NextResponse.next();
   }
-  
+
   // Health endpoints still need auth to verify tokens
   // They will pass through middleware to verify role and token validity
 
@@ -52,7 +52,7 @@ export async function middleware(req: NextRequest) {
         headers,
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 }

@@ -11,24 +11,25 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ allowedRole, children }: RoleGuardProps) {
-    const { selectedRole } = useRole();
+    const { selectedRole, isLoading } = useRole();
     const router = useRouter();
 
     useEffect(() => {
-        if (selectedRole !== allowedRole) {
+        if (!isLoading && selectedRole !== allowedRole) {
             router.push('/');
         }
-    }, [selectedRole, allowedRole, router]);
+    }, [selectedRole, allowedRole, router, isLoading]);
 
-    if (selectedRole !== allowedRole) {
+    if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-                    <p className="text-gray-600">Redirecting...</p>
-                </div>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
         );
+    }
+
+    if (selectedRole !== allowedRole) {
+        return null; // Will redirect via useEffect
     }
 
     return <>{children}</>;

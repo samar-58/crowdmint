@@ -8,7 +8,7 @@ import * as THREE from "three";
 
 function Stars(props: any) {
     const ref = useRef<THREE.Points>(null!);
-    const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }));
+    const [sphere] = useState(() => random.inSphere(new Float32Array(10000), { radius: 50 }));
 
     useFrame((state, delta) => {
         ref.current.rotation.x -= delta / 10;
@@ -20,8 +20,8 @@ function Stars(props: any) {
             <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
                 <PointMaterial
                     transparent
-                    color="#ffa0e0"
-                    size={0.005}
+                    color="#ffffff"
+                    size={0.02}
                     sizeAttenuation={true}
                     depthWrite={false}
                 />
@@ -71,7 +71,7 @@ function AnimatedShape() {
 
 export default function Scene() {
     return (
-        <div className="fixed inset-0 -z-10 h-full w-full pointer-events-none">
+        <div className="fixed inset-0 h-full w-full pointer-events-none">
             <Canvas camera={{ position: [0, 0, 5] }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} intensity={2} />

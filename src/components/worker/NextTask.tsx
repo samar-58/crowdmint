@@ -3,6 +3,7 @@ import { useNextTask, useSubmitTask } from "@/hooks/useTask";
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function NextTask() {
     const { data, isLoading, error } = useNextTask();
@@ -23,7 +24,8 @@ export default function NextTask() {
                 optionId: optionId,
             });
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Artificial delay for smooth transition
+            await new Promise(resolve => setTimeout(resolve, 800));
 
             setIsTransitioning(false);
             setSelectedOption(null);
@@ -38,42 +40,20 @@ export default function NextTask() {
         return (amount / 1_000_000_000).toFixed(4);
     };
 
-    if (isTransitioning) {
-        return (
-            <div className="min-h-[60vh] flex items-center justify-center">
-                <Card className="p-16 max-w-md w-full text-center bg-zinc-900/50 border-zinc-800">
-                    <div className="mb-6">
-                        <div className="inline-flex items-center justify-center w-24 h-24 bg-green-900/20 rounded-full mb-4">
-                            <svg className="h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                    </div>
-                    <h2 className="text-3xl font-bold text-white mb-3">
-                        Perfect!
-                    </h2>
-                    <p className="text-zinc-400 text-lg">
-                        Your submission was successful!
-                    </p>
-                    <div className="mt-6">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-                    </div>
-                </Card>
-            </div>
-        );
-    }
-
+    // Loading State
     if (isLoading) {
         return (
-            <div className="min-h-[60vh] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-                    <p className="text-zinc-400 text-lg">Loading task...</p>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center">
+                <div className="w-16 h-16 mb-8 relative">
+                    <div className="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
+                    <div className="absolute inset-2 rounded-full border-r-2 border-purple-500 animate-spin-reverse"></div>
                 </div>
+                <p className="text-zinc-400 font-medium animate-pulse">Finding next task...</p>
             </div>
         );
     }
 
+    // Empty State
     const isNoTasksError = error && (
         error.message.includes('411') ||
         error.message.toLowerCase().includes('no task found') ||
@@ -85,25 +65,18 @@ export default function NextTask() {
     if (noTasksAvailable) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center p-4">
-                <Card className="p-12 max-w-md w-full text-center bg-zinc-900/50 border-zinc-800">
-                    <div className="text-6xl mb-4">🎉</div>
-                    <h2 className="text-3xl font-bold text-white mb-4">
-                        All Caught Up!
-                    </h2>
-                    <p className="text-zinc-400 text-lg mb-2">
-                        You've completed all available tasks.
-                    </p>
-                    <p className="text-zinc-500 text-sm mb-6">
-                        Check back later for more opportunities to earn.
-                    </p>
-                    <div className="bg-green-900/20 border border-green-900/50 rounded-lg p-4 mb-6">
-                        <p className="text-green-400 font-medium text-sm">
-                            Rewards added to pending balance
-                        </p>
+                <Card className="max-w-md w-full text-center p-12 border-zinc-800 bg-zinc-900/30 backdrop-blur-sm">
+                    <div className="w-20 h-20 bg-zinc-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="text-4xl">🎉</span>
                     </div>
+                    <h2 className="text-2xl font-bold text-white mb-3">All Caught Up!</h2>
+                    <p className="text-zinc-400 mb-8 leading-relaxed">
+                        You've completed all available tasks for now. Great work!
+                        Check back later for more opportunities.
+                    </p>
                     <Button
                         onClick={() => window.location.reload()}
-                        className="w-full"
+                        className="w-full bg-white text-black hover:bg-zinc-200 h-12 font-medium"
                     >
                         Check for New Tasks
                     </Button>
@@ -112,16 +85,19 @@ export default function NextTask() {
         );
     }
 
+    // Error State
     if (error) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center p-4">
-                <Card className="p-8 max-w-md w-full text-center bg-zinc-900/50 border-zinc-800">
-                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Error Loading Task</h2>
-                    <p className="text-zinc-400 mb-4">{error.message}</p>
-                    <Button
-                        onClick={() => window.location.reload()}
-                    >
+                <Card className="max-w-md w-full text-center p-8 border-red-900/30 bg-red-950/10">
+                    <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Unable to Load Task</h2>
+                    <p className="text-zinc-400 mb-6">{error.message}</p>
+                    <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
                         Try Again
                     </Button>
                 </Card>
@@ -129,106 +105,125 @@ export default function NextTask() {
         );
     }
 
-    if (!data?.task) {
-        return null;
-    }
+    if (!data?.task) return null;
 
     const task = data.task;
 
     return (
-        <div className="max-w-5xl mx-auto">
-            <Card className="p-8 mb-8 bg-zinc-900/50 border-zinc-800">
-                <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-white mb-3">
-                            {task.title}
-                        </h1>
-                        <p className="text-zinc-400">
-                            Select the best option from the choices below
-                        </p>
-                    </div>
-                    <div className="bg-green-900/20 px-6 py-3 rounded-xl border border-green-900/50">
-                        <p className="text-sm text-green-400 font-medium mb-1">Reward</p>
-                        <p className="text-2xl font-bold text-green-500">
-                            {formatAmount(task.amount / task.maximumSubmissions)} SOL
-                        </p>
-                    </div>
-                </div>
-            </Card>
-
-            <Card className="p-8 bg-zinc-900/50 border-zinc-800">
-                <h2 className="text-xl font-semibold text-white mb-6">
-                    Choose one option:
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {task.options.map((option, index) => (
-                        <button
-                            key={option.id}
-                            onClick={() => handleOptionClick(option.id)}
-                            disabled={submitTask.isPending || isTransitioning}
-                            className={`group relative rounded-xl overflow-hidden transition-all duration-200 transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:hover:scale-100 disabled:opacity-60 ${selectedOption === option.id
-                                ? 'ring-2 ring-white shadow-lg'
-                                : 'border border-zinc-800 hover:border-zinc-600'
-                                }`}
-                        >
-                            <div className="aspect-square bg-zinc-800 overflow-hidden">
-                                <img
-                                    src={option.imageUrl}
-                                    alt={`Option ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                />
+        <div className="max-w-4xl mx-auto">
+            <AnimatePresence mode="wait">
+                {isTransitioning ? (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.05 }}
+                        className="min-h-[50vh] flex items-center justify-center"
+                    >
+                        <div className="text-center">
+                            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                </svg>
                             </div>
-
-                            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
-                                <p className="text-sm font-medium text-white">
-                                    Option {index + 1}
-                                </p>
+                            <h2 className="text-2xl font-bold text-white mb-2">Submission Received</h2>
+                            <p className="text-zinc-400">Loading next task...</p>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {/* Header */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold text-white tracking-tight mb-2">{task.title}</h1>
+                                <p className="text-zinc-400 text-lg">Select the best matching option</p>
                             </div>
+                            <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800 rounded-full px-5 py-2.5 backdrop-blur-sm">
+                                <span className="text-zinc-400 font-medium text-sm">Reward</span>
+                                <div className="h-4 w-px bg-zinc-700"></div>
+                                <span className="text-green-400 font-bold font-mono">
+                                    {formatAmount(task.amount / task.maximumSubmissions)} SOL
+                                </span>
+                            </div>
+                        </div>
 
-                            {selectedOption === option.id && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                                    <div className="bg-white rounded-full p-3 shadow-xl">
-                                        {submitTask.isPending ? (
-                                            <svg className="animate-spin h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        ) : (
-                                            <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                            </svg>
+                        {/* Options Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                            {task.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => handleOptionClick(option.id)}
+                                    disabled={submitTask.isPending || isTransitioning}
+                                    className={`
+                                        group relative aspect-square rounded-2xl overflow-hidden transition-all duration-300
+                                        ${selectedOption === option.id
+                                            ? 'ring-2 ring-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.3)] scale-[1.02] z-10'
+                                            : 'hover:scale-[1.02] hover:shadow-xl hover:ring-1 hover:ring-white/20'
+                                        }
+                                    `}
+                                >
+                                    <img
+                                        src={option.imageUrl}
+                                        alt="Task Option"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+
+                                    <div className={`
+                                        absolute inset-0 transition-colors duration-300 flex items-center justify-center
+                                        ${selectedOption === option.id ? 'bg-black/40 backdrop-blur-[2px]' : 'bg-black/0 group-hover:bg-black/10'}
+                                    `}>
+                                        {selectedOption === option.id && (
+                                            <motion.div
+                                                initial={{ scale: 0.5, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg"
+                                            >
+                                                {submitTask.isPending ? (
+                                                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </motion.div>
                                         )}
                                     </div>
-                                </div>
-                            )}
-                        </button>
-                    ))}
-                </div>
+                                </button>
+                            ))}
+                        </div>
 
-                {submitTask.isError && (
-                    <div className="mt-6 p-4 bg-red-900/20 border border-red-900/50 rounded-lg">
-                        <p className="text-red-400 text-center font-medium">
-                            ⚠️ Submission failed. Please try again.
-                        </p>
-                    </div>
+                        {/* Instructions */}
+                        <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl p-6 backdrop-blur-sm">
+                            <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                Instructions
+                            </h3>
+                            <ul className="grid md:grid-cols-2 gap-3 text-zinc-400 text-sm leading-relaxed">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-zinc-600 mt-1">•</span>
+                                    Review all images carefully before selecting.
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-zinc-600 mt-1">•</span>
+                                    Choose the option that best matches the description.
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-zinc-600 mt-1">•</span>
+                                    Selections are final and cannot be changed.
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-zinc-600 mt-1">•</span>
+                                    Rewards are credited immediately upon consensus.
+                                </li>
+                            </ul>
+                        </div>
+                    </motion.div>
                 )}
-            </Card>
-
-            <div className="mt-8 bg-blue-900/10 rounded-xl p-6 border border-blue-900/20">
-                <div className="flex items-start gap-3">
-                    <div className="text-2xl">💡</div>
-                    <div>
-                        <h3 className="font-semibold text-blue-400 mb-2">How it works:</h3>
-                        <ul className="text-blue-300 text-sm space-y-1">
-                            <li>• Review all the options carefully</li>
-                            <li>• Click on the image that best matches the task description</li>
-                            <li>• Your selection will be submitted automatically</li>
-                            <li>• You'll receive the next task immediately after submission</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            </AnimatePresence>
         </div>
     );
 }

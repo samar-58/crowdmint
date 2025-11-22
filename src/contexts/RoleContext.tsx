@@ -8,18 +8,21 @@ type Role = UserRole | 'unsigned';
 interface RoleContextType {
     selectedRole: Role;
     setSelectedRole: (role: Role) => void;
+    isLoading: boolean;
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
     const [selectedRole, setSelectedRoleState] = useState<Role>('unsigned');
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const savedRole = localStorage.getItem('userRole');
         if (savedRole === 'user' || savedRole === 'worker') {
             setSelectedRoleState(savedRole);
         }
+        setIsLoading(false);
     }, []);
 
     const setSelectedRole = (role: Role) => {
@@ -32,7 +35,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <RoleContext.Provider value={{ selectedRole, setSelectedRole }}>
+        <RoleContext.Provider value={{ selectedRole, setSelectedRole, isLoading }}>
             {children}
         </RoleContext.Provider>
     );

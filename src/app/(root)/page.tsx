@@ -9,23 +9,25 @@ import Scene from "@/components/landing/Scene";
 import { motion, Variants } from "framer-motion";
 
 export default function Home() {
-  const { selectedRole, setSelectedRole } = useRole();
+  const { selectedRole, setSelectedRole, isLoading } = useRole();
   const router = useRouter();
 
   useEffect(() => {
-    if (selectedRole === 'user') {
-      router.push('/user');
-    } else if (selectedRole === 'worker') {
-      router.push('/worker');
+    if (!isLoading) {
+      if (selectedRole === 'user') {
+        router.push('/user');
+      } else if (selectedRole === 'worker') {
+        router.push('/worker');
+      }
     }
-  }, [selectedRole, router]);
+  }, [selectedRole, router, isLoading]);
 
   const scrollToRoles = () => {
     document.getElementById('roles-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Don't show content if redirecting
-  if (selectedRole !== 'unsigned') {
+  // Don't show content if loading or redirecting
+  if (isLoading || selectedRole !== 'unsigned') {
     return null;
   }
 

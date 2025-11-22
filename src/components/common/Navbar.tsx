@@ -9,6 +9,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { useRole } from "@/contexts/RoleContext";
 
 export default function Navbar({
     role,
@@ -27,6 +28,7 @@ export default function Navbar({
     const router = useRouter();
     const hasAttemptedAuth = useRef(false);
     const [isPayingOut, setIsPayingOut] = useState(false);
+    const { setSelectedRole } = useRole();
 
     const {
         getToken,
@@ -61,6 +63,7 @@ export default function Navbar({
             if (response.status === 200 && response.data.token) {
                 setToken(role, response.data.token);
                 console.log(`${role} signed in successfully`);
+                setSelectedRole(role as any);
                 router.push(`/${role}`);
             }
         } catch (error) {
@@ -70,7 +73,7 @@ export default function Navbar({
         } finally {
             setAuthenticating(false);
         }
-    }, [role, connected, signMessage, isAuthenticating, getToken, setToken, publicKey, setAuthenticating, router]);
+    }, [role, connected, signMessage, isAuthenticating, getToken, setToken, publicKey, setAuthenticating, router, setSelectedRole]);
 
     useEffect(() => {
         if (connected && role !== "unsigned") {
@@ -100,7 +103,7 @@ export default function Navbar({
 
     const handlePayout = async () => {
         if (isPayingOut || pendingBalance <= 0) return;
-        
+
         setIsPayingOut(true);
         try {
             const response = await axios.post("/api/worker/payouts", {}, {
@@ -108,13 +111,13 @@ export default function Navbar({
                     Authorization: `Bearer ${getToken("worker")}`
                 }
             });
-            
+
             console.log("Payout successful:", response.data);
-            
+
             if (onRefreshBalance) {
-                 onRefreshBalance();
+                onRefreshBalance();
             }
-            
+
             alert(`Payout request successful! Amount: ${response.data.amount / 1_000_000_000} SOL`);
         } catch (error) {
             console.error("Error paying out:", error);

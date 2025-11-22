@@ -7,28 +7,57 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Scene from "@/components/landing/Scene";
 import { motion, Variants } from "framer-motion";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Home() {
   const { selectedRole, setSelectedRole, isLoading } = useRole();
   const router = useRouter();
+  const { connected } = useWallet();
+  const { setVisible } = useWalletModal();
+  const { getToken, isAuthenticating } = useAuthStore();
 
+  // Handle role selection
+  const handleRoleSelect = (role: 'user' | 'worker') => {
+    setSelectedRole(role);
+    if (!connected) {
+      setVisible(true);
+    }
+  };
+
+  // Redirect only when authenticated
   useEffect(() => {
-    if (!isLoading) {
-      if (selectedRole === 'user') {
-        router.push('/user');
-      } else if (selectedRole === 'worker') {
-        router.push('/worker');
+    if (!isLoading && selectedRole !== 'unsigned' && connected) {
+      const token = getToken(selectedRole as any);
+      if (token) {
+        router.push(`/${selectedRole}`);
       }
     }
-  }, [selectedRole, router, isLoading]);
+  }, [selectedRole, connected, isLoading, router, getToken]);
 
   const scrollToRoles = () => {
     document.getElementById('roles-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Don't show content if loading or redirecting
-  if (isLoading || selectedRole !== 'unsigned') {
-    return null;
+  if (isLoading || isAuthenticating) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
+            <div className="absolute inset-2 rounded-full border-r-2 border-white/20 animate-spin-reverse"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-white font-medium tracking-wide">Authenticating</p>
+            <p className="text-zinc-500 text-sm">Please sign the message in your wallet...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const containerVariants: Variants = {
@@ -57,8 +86,6 @@ export default function Home() {
   return (
     <div className="relative min-h-screen text-white overflow-x-hidden font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
       <Scene />
-
-
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 pt-20">
@@ -192,7 +219,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Creator Card */}
             <motion.button
-              onClick={() => setSelectedRole('user')}
+              onClick={() => handleRoleSelect('user')}
               className="group text-left relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 hover:bg-zinc-900/40 transition-all duration-300"
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -219,7 +246,7 @@ export default function Home() {
 
             {/* Worker Card */}
             <motion.button
-              onClick={() => setSelectedRole('worker')}
+              onClick={() => handleRoleSelect('worker')}
               className="group text-left relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 hover:bg-zinc-900/40 transition-all duration-300"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}

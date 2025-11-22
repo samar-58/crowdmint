@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuthStore, type UserRole } from '@/store/authStore';
 
 type Role = UserRole | 'unsigned';
@@ -20,10 +20,10 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const savedRole = localStorage.getItem('userRole');
-        
-        if (savedRole === 'user' || savedRole === 'worker') {   
+
+        if (savedRole === 'user' || savedRole === 'worker') {
             const token = getToken(savedRole);
-            
+
             if (token) {
                 setSelectedRoleState(savedRole);
             } else {
@@ -32,21 +32,27 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
                 setSelectedRoleState('unsigned');
             }
         }
-        
+
         setIsLoading(false);
     }, [getToken]);
 
-    const setSelectedRole = (role: Role) => {
+    const setSelectedRole = useCallback((role: Role) => {
         setSelectedRoleState(role);
         if (role === 'unsigned') {
             localStorage.removeItem('userRole');
         } else {
             localStorage.setItem('userRole', role);
         }
-    };
+    }, []);
+
+    const value = useMemo(() => ({
+        selectedRole,
+        setSelectedRole,
+        isLoading
+    }), [selectedRole, setSelectedRole, isLoading]);
 
     return (
-        <RoleContext.Provider value={{ selectedRole, setSelectedRole, isLoading }}>
+        <RoleContext.Provider value={value}>
             {children}
         </RoleContext.Provider>
     );

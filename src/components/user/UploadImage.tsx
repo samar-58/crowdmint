@@ -120,6 +120,8 @@ export default function UploadImage({ onImagesChange }: UploadImageProps) {
         formData.append("Content-Type", pendingImage.file.type);
         formData.append("file", pendingImage.file);
 
+
+        console.log(data.url, formData)
         await axios.post(data.url, formData);
 
         if (data.fields.key) {

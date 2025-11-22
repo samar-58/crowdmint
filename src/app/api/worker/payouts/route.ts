@@ -47,10 +47,13 @@ try {
     await sqs.send(new SendMessageCommand({
       QueueUrl: process.env.AWS_SQS_URL,
       MessageBody: JSON.stringify({
+        payoutId: payout.id,
         workerId: workerId,
         workerAddress: worker.address,
-        pendingBalance: payout.amount
-      })
+        amount: payout.amount
+      }),
+      MessageGroupId: workerId, // Required for FIFO queues - groups messages by worker
+      MessageDeduplicationId: `${payout.id}-${Date.now()}` // Ensures message uniqueness
     }));
   } catch (sqsError) {
     console.error("SQS send failed after successful transaction:", sqsError);

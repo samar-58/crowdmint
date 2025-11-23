@@ -209,7 +209,7 @@ export default function Navbar({
                             </div>
                         )}
 
-                        {role === "unsigned" && (
+                        {/* {role === "unsigned" && (
                             <Button
                                 onClick={() => document.getElementById('roles-section')?.scrollIntoView({ behavior: 'smooth' })}
                                 variant="primary"
@@ -217,7 +217,7 @@ export default function Navbar({
                             >
                                 Launch App
                             </Button>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>

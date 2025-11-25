@@ -103,13 +103,13 @@ export default function Home() {
 
           <motion.h1
             variants={itemVariants}
-            className="text-7xl md:text-9xl font-black mb-8 tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/10 drop-shadow-2xl"
+            className="text-5xl md:text-9xl font-black mb-8 tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/10 drop-shadow-2xl"
             style={{ lineHeight: 0.9 }}
           >
             CROWD<span className="text-indigo-500">MINT</span>
           </motion.h1>
 
-          <motion.p variants={itemVariants} className="text-xl md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
+          <motion.p variants={itemVariants} className="text-lg md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
             Crowdmint connects creators with a distributed workforce.
             <span className="text-white font-medium"> Label data to earn SOL</span>, or upload tasks to get authentic results.
           </motion.p>
@@ -210,7 +210,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Choose Your Path</h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">Choose Your Path</h2>
             <p className="text-xl text-zinc-400">Select how you want to interact with the protocol</p>
           </motion.div>
 

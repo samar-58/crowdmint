@@ -5,6 +5,7 @@ import { Points, PointMaterial, Float } from "@react-three/drei";
 import { useState, useRef } from "react";
 import * as random from "maath/random/dist/maath-random.esm";
 import * as THREE from "three";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 function Stars(props: any) {
     const ref = useRef<THREE.Points>(null!);
@@ -70,6 +71,10 @@ function AnimatedShape() {
 }
 
 export default function Scene() {
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    if (!isDesktop) return null;
+
     return (
         <div className="fixed inset-0 h-full w-full pointer-events-none">
             <Canvas camera={{ position: [0, 0, 5] }}>

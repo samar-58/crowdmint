@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
             secretAccessKey: secretKey,
         },
         region: REGION
+
     })
 
     const userId = req.headers.get('x-user-id');

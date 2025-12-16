@@ -200,13 +200,18 @@ export default function Navbar({
                         )}
 
                         {!hideWallet && (
-                            <div className="wallet-adapter-wrapper">
-                                {connected ? (
-                                    <WalletDisconnectButton className="!bg-zinc-900 !text-white !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-800 transition-all border !border-zinc-800" />
-                                ) : (
-                                    <WalletMultiButton className="!bg-white !text-black !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-200 transition-all" />
-                                )}
-                            </div>
+                            <>
+                                <div className="hidden md:block wallet-adapter-wrapper">
+                                    {connected ? (
+                                        <WalletDisconnectButton className="!bg-zinc-900 !text-white !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-800 transition-all border !border-zinc-800" />
+                                    ) : (
+                                        <WalletMultiButton className="!bg-white !text-black !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-200 transition-all" />
+                                    )}
+                                </div>
+                                <div className="md:hidden text-zinc-400 text-xs text-right">
+                                    Use desktop to use this app
+                                </div>
+                            </>
                         )}
 
                         {/* {role === "unsigned" && (

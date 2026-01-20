@@ -110,7 +110,7 @@ export default function Home() {
           </motion.h1>
 
           <motion.p variants={itemVariants} className="text-lg md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-            Crowdmint connects creators with a distributed workforce.
+            Bradman connects creators with a distributed workforce.
             <span className="text-white font-medium"> Label data to earn SOL</span>, or upload tasks to get authentic results.
           </motion.p>
 

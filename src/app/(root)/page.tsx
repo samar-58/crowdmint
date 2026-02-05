@@ -25,14 +25,32 @@ export default function Home() {
     }
   };
 
+  // Redirect if already authenticated (check on page load)
   useEffect(() => {
-    if (!isLoading && selectedRole !== 'unsigned' && connected) {
-      const token = getToken(selectedRole as any);
+    if (isLoading || isAuthenticating) return;
+
+    // Check for existing tokens and redirect immediately
+    const workerToken = getToken('worker');
+    const userToken = getToken('user');
+
+    if (workerToken) {
+      router.push('/worker');
+      return;
+    }
+
+    if (userToken) {
+      router.push('/user');
+      return;
+    }
+
+    // Original logic: redirect after role selection + wallet connection
+    if (selectedRole !== 'unsigned' && connected) {
+      const token = getToken(selectedRole as 'user' | 'worker');
       if (token) {
         router.push(`/${selectedRole}`);
       }
     }
-  }, [selectedRole, connected, isLoading, router, getToken]);
+  }, [selectedRole, connected, isLoading, isAuthenticating, router, getToken]);
 
   const scrollToRoles = () => {
     document.getElementById('roles-section')?.scrollIntoView({ behavior: 'smooth' });

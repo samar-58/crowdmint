@@ -32,7 +32,7 @@
     "axios": "^1.13.2",
     "bs58": "^6.0.0",
     "dotenv": "^17.2.3",
-    "framer-motion": "^12.23.24",
+    "framer-motion": "^12.31.1",
     "jos": "^0.0.2",
     "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",

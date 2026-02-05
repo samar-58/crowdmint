@@ -35,20 +35,22 @@ export default function WorkerPage() {
                             </div>
                         </Card>
 
-                        <Card className="bg-zinc-900/50 border-zinc-800 opacity-75">
+                        <Card hoverEffect className="bg-zinc-900/50 border-zinc-800">
                             <div className="h-full flex flex-col justify-between">
                                 <div>
                                     <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                                        <svg className="w-6 h-6 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>
-                                    <h2 className="text-xl font-semibold text-zinc-500 mb-2">Earnings (Coming Soon)</h2>
-                                    <p className="text-zinc-600 mb-6">
+                                    <h2 className="text-xl font-semibold text-white mb-2">Earnings & History</h2>
+                                    <p className="text-zinc-400 mb-6">
                                         Detailed analytics of your earnings and task history.
                                     </p>
                                 </div>
-                                <Button disabled variant="secondary" className="w-full">Coming Soon</Button>
+                                <Link href="/worker/earnings">
+                                    <Button variant="outline" className="w-full">View Earnings</Button>
+                                </Link>
                             </div>
                         </Card>
                     </div>

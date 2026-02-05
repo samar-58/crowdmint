@@ -3,9 +3,11 @@ import { useNextTask, useSubmitTask } from "@/hooks/useTask";
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function NextTask() {
+    const queryClient = useQueryClient();
     const { data, isLoading, error } = useNextTask();
     const submitTask = useSubmitTask();
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export default function NextTask() {
                         Check back later for more opportunities.
                     </p>
                     <Button
-                        onClick={() => window.location.reload()}
+                        onClick={() => queryClient.invalidateQueries({ queryKey: ['nextTask'] })}
                         className="w-full bg-white text-black hover:bg-zinc-200 h-12 font-medium"
                     >
                         Check for New Tasks
@@ -97,7 +99,7 @@ export default function NextTask() {
                     </div>
                     <h2 className="text-xl font-bold text-white mb-2">Unable to Load Task</h2>
                     <p className="text-zinc-400 mb-6">{error.message}</p>
-                    <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+                    <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['nextTask'] })} variant="outline" className="w-full">
                         Try Again
                     </Button>
                 </Card>

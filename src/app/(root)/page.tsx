@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import Scene from "@/components/landing/Scene";
+
 import { motion, Variants } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -101,7 +101,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen text-white overflow-x-hidden font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      <Scene />
+
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 pt-20">

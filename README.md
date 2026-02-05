@@ -56,6 +56,7 @@ sequenceDiagram
     participant DB as Postgres (Prisma)
     participant SQS as SQS FIFO
     participant Lambda as Payout Lambda
+    participant Cron as Reconciler Cron
     participant KMS as AWS KMS
     participant Solana as Solana Devnet
 
@@ -68,6 +69,9 @@ sequenceDiagram
     Lambda->>KMS: Decrypt/sign with private key
     Lambda->>Solana: Send SOL to worker address
     Lambda->>DB: Update payout status + balances
+    Cron->>DB: Find pending/processing payouts
+    Cron->>Solana: Check signatures / confirmations
+    Cron->>DB: Reconcile status and balances
 ```
 
 **On-chain earnings accumulation (API):**
@@ -94,6 +98,11 @@ sequenceDiagram
 4. **Lambda updates payout status** (`SUCCESS` / `FAILED`) and clears `lockedBalance` appropriately.  
    - Note: This Lambda code is not in this repo; it is assumed to be deployed separately.
 
+**Reconciliation cron (external):**
+1. **Cron scans pending/processing payouts** and checks on-chain confirmations.
+2. **Cron updates payout statuses** and ensures balances match on-chain reality.  
+   - Note: This cron job is not in this repo; it is assumed to be deployed separately.
+
 ## Key Data Models (Prisma)
 
 - `Task`: funded tasks (stores signature, amount in lamports, and options)
@@ -116,6 +125,7 @@ Schema: `prisma/schema.prisma`
 
 - **Queueing:** FIFO SQS ensures sequential payout processing per worker.
 - **Signing:** The withdrawal signer key is secured in AWS KMS, not in the app.
+- **Reconciliation:** A scheduled cron job confirms pending transactions and reconciles payout status.
 - **Idempotency:** Queue messages are deduplicated using `payout.id + timestamp`.
 - **Environment variables:** `REGION`, `ACCESS_KEY`, `SECRET_KEY`, `SQS_URL` are required for payout queueing.
 

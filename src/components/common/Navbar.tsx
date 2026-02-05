@@ -3,14 +3,11 @@
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import axios from "axios";
+import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuthStore, type UserRole } from "@/store/authStore";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { useRole } from "@/contexts/RoleContext";
-import { Logo } from "@/components/common/Logo";
 
 export default function Navbar({
     role,
@@ -35,7 +32,6 @@ export default function Navbar({
         getToken,
         setToken,
         removeToken,
-        verifyToken,
         isAuthenticating,
         setAuthenticating
     } = useAuthStore();
@@ -56,7 +52,7 @@ export default function Navbar({
         try {
             const signature = await signMessage(new TextEncoder().encode("Sign in to Crowdmint"));
 
-            const response = await axios.post(`/api/${role}/signin`, {
+            const response = await api.post(`/api/${role}/signin`, {
                 publicKey: publicKey?.toString(),
                 signature
             });
@@ -69,8 +65,6 @@ export default function Navbar({
             }
         } catch (error) {
             console.error(`Error signing in as ${role}:`, error);
-            if (axios.isAxiosError(error) && error.response?.status !== 400) {
-            }
         } finally {
             setAuthenticating(false);
         }
@@ -107,11 +101,7 @@ export default function Navbar({
 
         setIsPayingOut(true);
         try {
-            const response = await axios.post("/api/worker/payouts", {}, {
-                headers: {
-                    Authorization: `Bearer ${getToken("worker")}`
-                }
-            });
+            const response = await api.post("/api/worker/payouts", {});
 
             console.log("Payout successful:", response.data);
 
@@ -122,8 +112,8 @@ export default function Navbar({
             alert(`Payout request successful! Amount: ${response.data.amount / 1_000_000_000} SOL`);
         } catch (error) {
             console.error("Error paying out:", error);
-            if (axios.isAxiosError(error)) {
-                alert(error.response?.data?.error || "Error paying out. Please try again.");
+            if ((error as any).response) {
+                alert((error as any).response?.data?.error || "Error paying out. Please try again.");
             } else {
                 alert("Error paying out. Please try again.");
             }
@@ -133,56 +123,53 @@ export default function Navbar({
     }
 
     return (
-        <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-background/80 backdrop-blur-md">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-md">
+            <div className="max-w-5xl mx-auto px-6">
                 <div className="flex justify-between items-center h-16">
-                    <div className="flex items-center space-x-8">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2"
-                        >
-                            <Logo className="h-14 w-auto" />
+                    <div className="flex items-center gap-8">
+                        <Link href="/" className="font-bold text-xl">
+                            CROWDMINT
                         </Link>
 
                         {role === "user" && connected && getToken("user") && (
-                            <div className="hidden md:flex space-x-1">
-                                <Link href="/user/tasks/create">
-                                    <Button variant="ghost" size="sm">Create Task</Button>
+                            <div className="hidden md:flex gap-1">
+                                <Link href="/user/tasks/create" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
+                                    Create Task
                                 </Link>
-                                <Link href="/user/tasks">
-                                    <Button variant="ghost" size="sm">View Tasks</Button>
+                                <Link href="/user/tasks" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
+                                    View Tasks
                                 </Link>
                             </div>
                         )}
                         {role === "worker" && connected && getToken("worker") && (
-                            <div className="hidden md:flex space-x-1">
-                                <Link href="/worker">
-                                    <Button variant="ghost" size="sm">Home</Button>
+                            <div className="hidden md:flex gap-1">
+                                <Link href="/worker" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
+                                    Home
                                 </Link>
-                                <Link href="/worker/task">
-                                    <Button variant="ghost" size="sm">Next Task</Button>
+                                <Link href="/worker/task" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
+                                    Next Task
                                 </Link>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-4">
                         {role === "worker" && connected && getToken("worker") && (
-                            <div className="flex items-center gap-3 bg-zinc-900 px-4 py-1.5 rounded-full border border-zinc-800">
+                            <div className="flex items-center gap-4 px-4 py-2 bg-zinc-50 rounded-lg border border-zinc-200">
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">Pending</span>
-                                    <span className="text-sm font-bold text-white">{(pendingBalance / 1_000_000_000).toFixed(4)} SOL</span>
+                                    <span className="text-[10px] text-zinc-400 font-medium uppercase">Pending</span>
+                                    <span className="text-sm font-semibold text-zinc-900">{(pendingBalance / 1_000_000_000).toFixed(4)} SOL</span>
                                 </div>
-                                <div className="h-6 w-px bg-zinc-800"></div>
+                                <div className="h-6 w-px bg-zinc-200"></div>
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">Locked</span>
-                                    <span className="text-sm font-bold text-amber-400">{(lockedBalance / 1_000_000_000).toFixed(4)} SOL</span>
+                                    <span className="text-[10px] text-zinc-400 font-medium uppercase">Locked</span>
+                                    <span className="text-sm font-semibold text-amber-600">{(lockedBalance / 1_000_000_000).toFixed(4)} SOL</span>
                                 </div>
-                                <div className="h-6 w-px bg-zinc-800"></div>
+                                <div className="h-6 w-px bg-zinc-200"></div>
                                 <button
                                     onClick={handlePayout}
                                     disabled={pendingBalance <= 0 || isPayingOut}
-                                    className="text-xs font-semibold text-white hover:text-zinc-300 transition-colors disabled:text-zinc-600 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                    className="text-xs font-medium text-zinc-900 hover:text-zinc-600 transition-colors disabled:text-zinc-300 disabled:cursor-not-allowed flex items-center gap-1.5"
                                 >
                                     {isPayingOut ? (
                                         <>
@@ -200,52 +187,37 @@ export default function Navbar({
                         )}
 
                         {!hideWallet && (
-                            <>
-                                <div className="hidden md:block wallet-adapter-wrapper">
-                                    {connected ? (
-                                        <WalletDisconnectButton className="!bg-zinc-900 !text-white !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-800 transition-all border !border-zinc-800" />
-                                    ) : (
-                                        <WalletMultiButton className="!bg-white !text-black !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-200 transition-all" />
-                                    )}
-                                </div>
-                                <div className="md:hidden text-zinc-400 text-xs text-right">
-                                    Use desktop to use this app
-                                </div>
-                            </>
+                            <div className="hidden md:block wallet-adapter-wrapper">
+                                {connected ? (
+                                    <WalletDisconnectButton className="!bg-zinc-100 !text-zinc-900 !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-200 transition-all !border !border-zinc-200" />
+                                ) : (
+                                    <WalletMultiButton className="!bg-zinc-900 !text-white !font-medium !rounded-lg !h-9 !px-4 !text-sm hover:!bg-zinc-800 transition-all" />
+                                )}
+                            </div>
                         )}
-
-                        {/* {role === "unsigned" && (
-                            <Button
-                                onClick={() => document.getElementById('roles-section')?.scrollIntoView({ behavior: 'smooth' })}
-                                variant="primary"
-                                size="sm"
-                            >
-                                Launch App
-                            </Button>
-                        )} */}
                     </div>
                 </div>
             </div>
 
             {/* Mobile Navigation */}
-            <div className="md:hidden border-t border-zinc-800 bg-background">
+            <div className="md:hidden border-t border-zinc-200 bg-white">
                 {role === "user" && connected && getToken("user") && (
-                    <div className="px-4 py-3 space-y-2">
-                        <Link href="/user/tasks/create" className="block">
-                            <Button variant="ghost" className="w-full justify-start">Create Task</Button>
+                    <div className="px-4 py-3 flex gap-2">
+                        <Link href="/user/tasks/create" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900">
+                            Create Task
                         </Link>
-                        <Link href="/user/tasks" className="block">
-                            <Button variant="ghost" className="w-full justify-start">View Tasks</Button>
+                        <Link href="/user/tasks" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900">
+                            View Tasks
                         </Link>
                     </div>
                 )}
                 {role === "worker" && connected && getToken("worker") && (
-                    <div className="px-4 py-3 space-y-2">
-                        <Link href="/worker" className="block">
-                            <Button variant="ghost" className="w-full justify-start">Home</Button>
+                    <div className="px-4 py-3 flex gap-2">
+                        <Link href="/worker" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900">
+                            Home
                         </Link>
-                        <Link href="/worker/task" className="block">
-                            <Button variant="ghost" className="w-full justify-start">Next Task</Button>
+                        <Link href="/worker/task" className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900">
+                            Next Task
                         </Link>
                     </div>
                 )}

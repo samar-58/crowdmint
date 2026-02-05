@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --primary: #ffffff;
-  --primary-foreground: #09090b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #fafafa;
+  --background: #ffffff;
+  --foreground: #18181b;
+  --primary: #18181b;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #18181b;
 }
 
 body {
@@ -26,10 +26,10 @@ body {
 
 @layer utilities {
   .minimal-card {
-    @apply bg-zinc-900/50 border border-zinc-800 rounded-xl;
+    @apply bg-white border border-zinc-200 rounded-xl shadow-sm;
   }
 
   .minimal-hover {
-    @apply transition-all duration-200 hover:bg-zinc-800/50;
+    @apply transition-all duration-200 hover:bg-zinc-50;
   }
 }

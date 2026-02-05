@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import axios from 'axios';
+import api from '@/lib/api';
 
 export type UserRole = "user" | "worker";
 
@@ -75,7 +75,7 @@ export const useAuthStore = create<AuthState>()(
         if (!token) return false;
 
         try {
-          const response = await axios.get(`/api/${role}/health`, {
+          const response = await api.get(`/api/${role}/health`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
